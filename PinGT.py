@@ -14,17 +14,19 @@ app.config.update(dict(
     SECRET_KEY='development key',
     USERNAME='admin',
     PASSWORD='default',
-    MYSQL_DATABASE_HOST='localhost',
+    MYSQL_DATABASE_HOST='52.91.229.69',
     MYSQL_DATABASE_PORT=3306,
     MYSQL_DATABASE_USER='root',
-    MYSQL_DATABASE_PASSWORD='',
+    MYSQL_DATABASE_PASSWORD='CS6400',
     MYSQL_DATABASE_DB='PIN'
 ))
 
 app.config.from_object(__name__)
 db = MySQL()
 db.init_app(app)
+print "try to connect database..."
 conn = db.connect()
+print  "connection complete"
 
 def get_cursor():
     """Connects to the specific database."""
@@ -41,7 +43,7 @@ def init_db():
 @app.route('/')
 def show_entries():
     cur = get_cursor()
-    cur.execute('select title, text from entries order by id desc')
+    cur.execute('select title, text from entries')
     entries = [dict(title=row[0], text=row[1]) for row in cur.fetchall()]
     return render_template('show_entries.html', entries=entries)
 
