@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+{% block body %}
+<h2 class="text-center">Register</h2>
+{% if error %}<p class="error"><strong>Error:</strong> {{ error }}{% endif %}
+<div class="col-4-md text-center">
+    <form action="{{ url_for('register') }}" method="post">
+        <dl>
+            <dt>GT ID:
+            <dd><input type="text" name="id">
+            <dt>Password:
+            <dd><input type="password" name="password">
+            <dt>Major:
+            <dd><input type="text" name="major"><br><br>
+            <dt>Grade:
+            <dd><input type="radio" name="grade" value="undergraduate" checked>Undergraduate
+            <input type="radio" name="grade" value="graduate">Graduate
+            <br><br>
+            <dt>Gender:
+            <dd><input type="radio" name="gender" value="male" checked>Male
+            <input type="radio" name="gender" value="female">Female
+            <br><br>
+            <dd><input type="submit" value="Register">
+        </dl>
+    </form>
+</div>
+{% endblock %}

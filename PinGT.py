@@ -64,7 +64,7 @@ def add_entry():
 def login():
     error = None
     if request.method == 'POST':
-        if request.form['username'] != app.config['USERNAME']:
+        if request.form['GT ID'] != app.config['USERNAME']:
             error = 'Invalid username'
         elif request.form['password'] != app.config['PASSWORD']:
             error = 'Invalid password'
@@ -73,6 +73,36 @@ def login():
             flash('You were logged in')
             return redirect(url_for('show_entries'))
     return render_template('login.html', error=error)
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    error = None
+    if request.method == 'GET':
+        return render_template('register.html', error=error)
+
+    if request.method == 'POST':
+        if len(request.form['id']) == 0:
+            error = "GT ID cannot be empty"
+            return render_template('register.html', error=error)
+        if len(request.form['major']) == 0:
+            error = "Major cannot be empty"
+            return render_template('register.html', error=error)
+        if len(request.form['password']) == 0:
+            error = "Password cannot be empty"
+            return render_template('register.html', error=error)
+
+    id = request.form['id']
+    password = request.form['password']
+    grade = request.form['grade']
+    major = request.form['major']
+    gender = request.form['gender']
+    print "Register input: ", id, password, grade, major, gender
+
+
+    ### TODO Populate user input into database here
+
+    session['logged_in'] = True
+    return redirect(url_for('show_entries'))
 
 @app.route('/logout')
 def logout():
