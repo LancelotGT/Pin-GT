@@ -4,6 +4,7 @@ import os
 from flaskext.mysql import MySQL
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, flash
+from database import connect_db, add_user
 
 # create our little application :)
 app = Flask(__name__)
@@ -21,12 +22,31 @@ app.config.update(dict(
     MYSQL_DATABASE_DB='PIN'
 ))
 
+
+def test(test_db):
+    db = connect_db(test_db)
+    db.ensure_tables()
+    # check the initial user_tb
+    records = []
+    for row in db.get_all_records(db.user_tb):
+        records.append(row)
+    print records
+    # insert record and check
+    add_user(db, db.user_tb, 1, 1, 0, 'cs', 0)
+    for row in db.get_all_records(db.user_tb):
+        records.append(row)
+    print records
+
 app.config.from_object(__name__)
 db = MySQL()
+'''
 db.init_app(app)
 print "try to connect database..."
 conn = db.connect()
 print  "connection complete"
+cur = conn.cursor()'''
+test(db.init_app(app))
+    
 
 def get_cursor():
     """Connects to the specific database."""
@@ -112,3 +132,4 @@ def logout():
 
 if __name__ == '__main__':
     app.run()
+
