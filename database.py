@@ -73,21 +73,19 @@ class DBWrapper(object):
         self.db_file = db_file
         self.connection = None
         self.c = None
-
         self.user_tb = 'user_tb'
         self.location_tb = 'location_tb'
         self.activity_tb = 'activity_tb'
         self.tag_tb = 'tag_tb'
         self.actTag_tb = 'actTag_tb'
         self.notification_tb = 'notification_tb'
-
         self.conn()
 
     def conn(self):
         if self.connection is not None:
             self.connection.commit()
             self.connection.close()
-        self.connection = self.connect()
+        self.connection = self.db_file.connect()
         print  "connection complete"
         self.c = self.connection.cursor()
 
@@ -110,11 +108,9 @@ class DBWrapper(object):
         self.exe(self._build_create_table_sql(self.actTag_tb, actTag_schema))
         self.exe(self._build_create_table_sql(self.notification_tb, notification_schema))      
 
-
     def _build_insert_sql(self, tb_name, schema):
         question_marks = ', '.join(['%s'] * (len(schema) - 1))      # length -1 since the last element of schema is pk
         return "INSERT INTO {0} VALUES ({1})".format(tb_name, question_marks)
-
 
     def exe(self, sql, params=None):
         if params:
@@ -122,13 +118,11 @@ class DBWrapper(object):
         else:
             return self.c.execute(sql)
 
-
     def commit(self):
         self.connection.commit()
         self.c = self.connection.cursor()
 
-
-    def instert_rows(self, tb_name, schema, iter_list):
+    def insert_rows(self, tb_name, schema, iter_list):
         sql = self._build_insert_sql(tb_name, schema)
         for values in iter_list:
             self.c.execute(sql, tuple(values))
@@ -136,13 +130,13 @@ class DBWrapper(object):
 
     def get_all_records(self, table):
         sql = "SELECT * FROM {0}".format(table)
-        return self.exe(sql)
+        self.exe(sql)
+        return self.c.fetchall();
 
     def get_record_by_id(self, table, schema):
         sql = ("SELECT * FROM {0} WHERE " + str(schema[0][0]) + " = %s").format(table)
-        self.exe(sql, (Id))
+        self.exe(sql, (ID))
         return self.c.fetchone()
-        
 
     '''def update_record_by_id(self, table, Id, updates):
         sql = "UPDATE {0} SET nickname=?, accuracy=?, rmse=?, submission=?, \
@@ -157,6 +151,3 @@ class DBWrapper(object):
         self.exe(sql)
         self.commit()
     '''
-
-
-

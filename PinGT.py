@@ -22,7 +22,6 @@ app.config.update(dict(
     MYSQL_DATABASE_DB='PIN'
 ))
 
-
 def test(test_db):
     db = connect_db(test_db)
     db.ensure_tables()
@@ -32,21 +31,24 @@ def test(test_db):
         records.append(row)
     print records
     # insert record and check
-    add_user(db, db.user_tb, 1, 1, 0, 'cs', 0)
+    add_user(db, db.user_tb, 903012347, "asdf", 0, 'ece', 0)
     for row in db.get_all_records(db.user_tb):
         records.append(row)
     print records
 
 app.config.from_object(__name__)
 db = MySQL()
-'''
 db.init_app(app)
+
+db_handler = connect_db(db)
+db_handler.ensure_tables()
+
+# test(db)
+
 print "try to connect database..."
 conn = db.connect()
 print  "connection complete"
-cur = conn.cursor()'''
-test(db.init_app(app))
-    
+cur = conn.cursor()
 
 def get_cursor():
     """Connects to the specific database."""
@@ -84,9 +86,16 @@ def add_entry():
 def login():
     error = None
     if request.method == 'POST':
-        if request.form['GT ID'] != app.config['USERNAME']:
+
+        key_pairs = {}
+        for row in db_handler.get_all_records(db_handler.user_tb):
+            key_pairs[row[0]] = row[1]
+
+        print "user:password pairs in db: ", key_pairs
+
+        if int(request.form['username']) not in key_pairs.keys():
             error = 'Invalid username'
-        elif request.form['password'] != app.config['PASSWORD']:
+        elif request.form['password'] != key_pairs[int(request.form['username'])]:
             error = 'Invalid password'
         else:
             session['logged_in'] = True
@@ -118,9 +127,11 @@ def register():
     gender = request.form['gender']
     print "Register input: ", id, password, grade, major, gender
 
-
     ### TODO Populate user input into database here
-
+    add_user(db_handler, db_handler.user_tb, id, password, gender == "male", major, grade == "undergraduate")
+    print "current user table: "
+    for row in db_handler.get_all_records(db_handler.user_tb):
+        print row
     session['logged_in'] = True
     return redirect(url_for('show_entries'))
 
