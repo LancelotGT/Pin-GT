@@ -3,7 +3,7 @@
 import os
 from flaskext.mysql import MySQL
 from flask import Flask, request, session, g, redirect, url_for, abort, \
-     render_template, flash
+     render_template, flash, jsonify
 from database import connect_db, add_user
 from utils import *
 
@@ -69,13 +69,22 @@ def show_entries():
     # cur.execute('select title, text from entries')
     # entries = [dict(title=row[0], text=row[1]) for row in cur.fetchall()]
 
-    start_date='2015/11/17'
-    end_date='2015/11/18'
-    entries = getEventsByDay(start_date, end_date)
-    locations = [entry['Location'] for entry in entries]
-    print locations
-    latlons = getGeoInfo(locations)
-    return render_template('show_entries.html', entries=entries)
+    return render_template('show_entries.html')
+
+'''
+conduct heavy lifting work for events-related db communication
+'''
+@app.route('/events', methods=['GET', 'POST'])
+def events():
+    error = None
+    if request.method == "GET":
+        startDate = request.args.get('startDate', type=str)
+        endDate = request.args.get('endDate', type=str)
+        entries = getEventsByDay(startDate, endDate)
+        entries = processGeoInfo(entries)
+        print entries
+        return jsonify(events=entries)
+    return redirect(url_for('/'))
 
 @app.route('/add', methods=['POST'])
 def add_entry():

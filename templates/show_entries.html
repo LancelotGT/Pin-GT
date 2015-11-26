@@ -20,27 +20,14 @@
 <script src="{{ url_for('static', filename='show_entries.js') }}"></script>
 <script>
     $(document).ready(function() {
-        events = [];
-        {% for entry in entries %}
-        events.push([
-            "{{ entry.Name }}",
-            "{{ entry.Location }}",
-            "{{ entry.Description }}"
-        ]);
-        {% endfor %}
 
         var map;
+        campusPosition = {lat: 33.776020, lng: -84.397111};
         initMap();
-        position = {lat: 33.776020, lng: -84.397111};
 
-        events.forEach(function(entry) {
-            var name = entry[0];
-            var location = entry[1];
-            var description = entry[2];
-            postEvent(name, location, description);
-        });
-        <!--console.log("location: " + events[5][1]);-->
-        <!--getLonLat(events[5][1]);-->
+        var start_date='2015/11/17';
+        var end_date='2015/11/18';
+        getEvents(start_date, end_date);
     });
 </script>
 {% endblock %}
