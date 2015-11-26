@@ -23,20 +23,20 @@ def crawler(start_date,end_date):
                 if k==5:
                     line=re.search(r'\>(.*)\<', str(line)).group(1)
                     line=re.search(r'\>(.*)\<', str(line)).group(1)
-                    dic['Name']=str(line)
+                    dic["Name"]=str(line)
                 if k==4:
                     line=re.search(r'\>(.*)\<', str(line)).group(1)
-                    dic['Date']=str(line)
+                    dic["Date"]=str(line)
                 if k==3:
                     line=re.search(r'\>(.*)\<', str(line)).group(1)
                     line=re.search(r'span\>(.*)\<', str(line)).group(1)
-                    dic['Time']=str(line)
+                    dic["Time"]=str(line)
                 if k==2:
                     line=re.search(r'\>(.*)\<', str(line)).group(1)
-                    dic['Location']=str(line)
+                    dic["Location"]=str(line)
                 if k==1:
                     line=re.search(r'\>(.*)\<', str(line)).group(1)
-                    dic['Description']=str(line)
+                    dic["Description"]=str(line)
                 k=k-1
             if '<div class="tags">' in str(line):
                 j=2
@@ -56,7 +56,7 @@ def crawler(start_date,end_date):
                 j=j-1
             if j==-1:
                 tag1=list(set(tag))
-                dic['Tag']=tag1
+                dic["Tag"]=tag1
                 Activity.append(dic)
                 file.write('%s' %dic)
                 file.write('\n')

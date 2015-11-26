@@ -5,6 +5,7 @@ from flaskext.mysql import MySQL
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, flash
 from database import connect_db, add_user
+from utils import *
 
 # create our little application :)
 app = Flask(__name__)
@@ -64,9 +65,16 @@ def init_db():
 
 @app.route('/')
 def show_entries():
-    cur = get_cursor()
-    cur.execute('select title, text from entries')
-    entries = [dict(title=row[0], text=row[1]) for row in cur.fetchall()]
+    # cur = get_cursor()
+    # cur.execute('select title, text from entries')
+    # entries = [dict(title=row[0], text=row[1]) for row in cur.fetchall()]
+
+    start_date='2015/11/17'
+    end_date='2015/11/18'
+    entries = getEventsByDay(start_date, end_date)
+    locations = [entry['Location'] for entry in entries]
+    print locations
+    latlons = getGeoInfo(locations)
     return render_template('show_entries.html', entries=entries)
 
 @app.route('/add', methods=['POST'])
