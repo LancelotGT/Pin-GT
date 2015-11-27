@@ -44,6 +44,8 @@ function addEventInfo(data) {
                 name = events[j].Name;
                 description = events[j].Description;
                 loc = events[j].Location;
+                time = events[j].Time;
+                date = events[j].Date;
                 tags = events[j].Tag;
 
                 contentString = contentString + '<div id="content">'+
@@ -52,6 +54,11 @@ function addEventInfo(data) {
                 '<h3 id="firstHeading" class="firstHeading">' +
                 name +
                 '</h3>'+
+                '<h4>Time:&nbsp' +
+                time +
+                '&nbspDate:&nbsp' +
+                date +
+                '</h4>' +
                 '<h4>Location:&nbsp' +
                 loc +
                 '</h4><h4>Tags:&nbsp';
