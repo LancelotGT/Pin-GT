@@ -24,47 +24,45 @@ function initMap() {
 }
 
 function placeMarkerAndPanTo(latLng, map, name, time, date, loc, tags, description) {
-  var marker = new google.maps.Marker({
-    position: latLng,
-    map: map,
-    title: name,
-  });
+    var marker = new google.maps.Marker({
+        position: latLng,
+        map: map,
+        title: name,
+    });
 
-  contentString = '<div id="content">'+
-                '<div id="siteNotice">'+
-                '</div>'+
-                '<h3 id="firstHeading" class="firstHeading">' +
-                name +
-                '</h3>'+
-                '<h4>Time:&nbsp' +
-                time +
-                '&nbspDate:&nbsp' +
-                date +
-                '</h4>' +
-                '<h4>Location:&nbsp' +
-                loc +
-                '</h4><h4>Tags:&nbsp';
-                for (var k = 0; k < tags.length; k++) {
-                    contentString = contentString + tags[k] + "&nbsp";
-                }
-                contentString = contentString + '</h4>' +
-                '<div id="bodyContent">'+
-                '<p>' +
-                description +
-                '</p>' +
-                '</div>'+
-                '</div><hr>';
+    contentString = '<div id="content">'+
+    '<div id="siteNotice">'+
+    '</div>'+
+    '<h3 id="firstHeading" class="firstHeading">' +
+    name +
+    '</h3>'+
+    '<h4>Time:&nbsp' +
+    time +
+    '&nbspDate:&nbsp' +
+    date +
+    '</h4>' +
+    '<h4>Location:&nbsp' +
+    loc +
+    '</h4><h4>Tags:&nbsp';
+    for (var k = 0; k < tags.length; k++) {
+        contentString = contentString + tags[k] + "&nbsp";
+    }
+    contentString = contentString + '</h4>' +
+    '<div id="bodyContent">'+
+    '<p>' +
+    description +
+    '</p>' +
+    '</div>'+
+    '</div><hr>';
 
   var infoWindow = new google.maps.InfoWindow();
   infoWindow.setContent(contentString);
-  infoWindow.open(map, marker);
   google.maps.event.addListener(marker, 'click', (function(marker) {
     return function() {
-        infoWindow.setContent(contentStrings);
+        infoWindow.setContent(contentString);
         infoWindow.open(map, marker);
     }
   })(marker));
-
   map.panTo(latLng);
 }
 
