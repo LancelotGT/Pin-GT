@@ -8,7 +8,7 @@ from crawler import crawler
 
 def getEventsByDay(start_date, end_date, tag):
     results = crawler(start_date, end_date)
-    if tag == 'all':
+    if tag == 'All':
         return results
     entries = [e for e in results if tag in e['Tag']]
     return entries
