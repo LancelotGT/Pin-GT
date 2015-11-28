@@ -80,24 +80,20 @@ def events():
     if request.method == "GET":
         startDate = request.args.get('startDate', type=str)
         endDate = request.args.get('endDate', type=str)
-        entries = getEventsByDay(startDate, endDate)
+        tag = request.args.get('tag', type=str)
+        entries = getEventsByDay(startDate, endDate, tag)
         entries = processGeoInfo(entries)
-        print entries
         return jsonify(events=entries)
+    elif request.method == "POST":
+        name = request.json['name']
+        date = request.json['date']
+        time = request.json['time']
+        tags = request.json['tags']
+        location = request.json['location']
+        description = request.json['description']
+        print name, date, time, tags, location, description
+        return "hello"
     return redirect(url_for('/'))
-
-@app.route('/add', methods=['POST'])
-def add_entry():
-    if not session.get('logged_in'):
-        abort(401)
-    cur = get_cursor()
-    queryStr = 'insert into entries (title, text) values ("%s", "%s")' \
-               % (request.form['title'], request.form['text'])
-    cur.execute(queryStr)
-    commit()
-
-    flash('New entry was successfully posted')
-    return redirect(url_for('show_entries'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

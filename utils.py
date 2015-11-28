@@ -6,8 +6,12 @@ import urllib2
 import json, math
 from crawler import crawler
 
-def getEventsByDay(start_date, end_date):
-    return crawler(start_date, end_date)
+def getEventsByDay(start_date, end_date, tag):
+    results = crawler(start_date, end_date)
+    if tag == 'all':
+        return results
+    entries = [e for e in results if tag in e['Tag']]
+    return entries
 
 '''
 given an array of location, make request to Google API and translate
@@ -23,8 +27,6 @@ def processGeoInfo(entries):
         raw = urllib2.urlopen(url)
         raw = raw.read()
         resp = json.loads(raw)
-        # print url
-        # print resp
         if len(resp["results"]) > 0:
             entry['latlon'] = resp["results"][0]["geometry"]["location"]
             ndigit = 7

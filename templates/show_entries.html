@@ -1,33 +1,91 @@
 {% extends "layout.html" %}
 {% block body %}
-<div id="map">This should be a map.</div><hr>
+{% if session.logged_in %}
 <div class="row">
-    <div class="col-md-12 text-left">
-        {% if session.logged_in %}
-        <form action="{{ url_for('add_entry') }}" method="post" class="add-entry">
-            <dl>
-                <dt><h2>Title:</h2>
-                <dd><input type="text" class="form-control" placeholder="Your title here" name="title"><br>
-                <dt><h2>Text:</h2>
-                <dd><textarea class="form-control" rows="5" name="text"></textarea><br>
-                <dd><button type="submit" class="btn btn-primary">Share event</button>
-            </dl>
-        </form>
-        {% endif %}
+    <div class="col-md-12">
+        <div id="map">This should be a map.</div><hr>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <div class="row">
+            <div class="col-md-4">
+                <h2>Pick a start date</h2>
+                <div class="input-group date" id="datepicker1">
+                    <input type="text" class="form-control">
+                    <div class="input-group-addon">
+                        <span class="glyphicon glyphicon-th"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <h2>Pick a end date</h2>
+                <div class="input-group date" id="datepicker2">
+                    <input type="text" class="form-control">
+                    <div class="input-group-addon">
+                        <span class="glyphicon glyphicon-th"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <h2>Filter events</h2>
+                <button type="button" id="submitButton" data-loading-text="Loading..." class="btn btn-primary" autocomplete="off">
+                Submit
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <h2>Tags</h2>
+        <select class="form-control" id="tags">
+            <option>All</option>
+            <option>Miscellaneous</option>
+            <option>Student sponsored</option>
+            <option>Training</option>
+            <option>Workshop</option>
+            <option>Career</option>
+            <option>Professional development</option>
+            <option>Lecture</option>
+            <option>Seminar</option>
+            <option>Colloquium</option>
+            <option>Conference</option>
+            <option>Symposium</option>
+            <option>Other</option>
+        </select>
     </div>
 </div>
 
-<script src="{{ url_for('static', filename='show_entries.js') }}"></script>
-<script>
-    $(document).ready(function() {
+{% include "pin_event.html" %}
 
+<script src="{{ url_for('static', filename='show_entries.js') }}"></script>
+
+<script>
+    var start_date='2015/11/17';
+    var end_date='2015/11/18';
+    $(document).ready(function() {
         var map;
         campusPosition = {lat: 33.776020, lng: -84.397111};
         initMap();
+        <!--getEvents(start_date, end_date, 'all');-->
 
-        var start_date='2015/11/17';
-        var end_date='2015/11/22';
-        getEvents(start_date, end_date);
+        $('#datepicker1').datepicker().on('changeDate', function(e) {
+            start_date = $('#datepicker1').data('datepicker').getFormattedDate('mm dd, yyyy');
+        });
+
+        $('#datepicker2').datepicker().on('changeDate', function(e) {
+            end_date = $('#datepicker2').data('datepicker').getFormattedDate('mm dd, yyyy');
+        });
+    });
+
+    $('#submitButton').click(function() {
+        initMap();
+        getEvents(start_date, end_date, $('#tags option:selected').text());
     });
 </script>
+{% else %}
+<h2>Please log in to see on campus events.</h2>
+{% endif %}
 {% endblock %}
