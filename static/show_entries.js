@@ -7,6 +7,7 @@ function initMap() {
     zoom: 16,
     mapTypeId: google.maps.MapTypeId.ROADMAP,
   });
+  customizeMap();
 
   map.addListener('click', function(e) {
     $('#myModal').modal('toggle');
@@ -23,11 +24,55 @@ function initMap() {
   });
 }
 
+// turn off road labels and change some colors for the map
+function customizeMap() {
+  map.set('styles', [
+  {
+    featureType: 'road',
+    elementType: 'geometry',
+    stylers: [
+      { color: '#000000' },
+      { weight: 0.3 }
+    ]
+  }, {
+    featureType: 'road',
+    elementType: 'labels',
+    stylers: [
+      { saturation: -100 },
+      { invert_lightness: true }
+    ]
+  }, {
+    featureType: 'landscape',
+    elementType: 'geometry',
+    stylers: [
+      { hue: '#ffff00' },
+      { gamma: 1.4 },
+      { saturation: 82 },
+      { lightness: 20 }
+    ]
+  }, {
+    featureType: 'poi.school',
+    elementType: 'geometry',
+    stylers: [
+      { hue: '#fff700' },
+      { lightness: -15 },
+      { saturation: 99 }
+    ]
+  }, {
+    featureType: 'road',
+    elementType: 'labels',
+    stylers: [{visibility: 'off'}]
+  }
+]);
+
+}
 function placeMarkerAndPanTo(latLng, map, name, time, date, loc, tags, description) {
+    var iconBase = 'https://maps.google.com/mapfiles/kml/shapes/';
     var marker = new google.maps.Marker({
         position: latLng,
         map: map,
         title: name,
+        icon: iconBase + 'schools_maps.png'
     });
 
     contentString = '<div id="content">'+
@@ -163,11 +208,12 @@ function addEventInfo(data) {
     var infoWindow = new google.maps.InfoWindow(), marker, i;
 
     for (var i = 0; i < events.length; i++) {
-
+        var iconBase = 'https://maps.google.com/mapfiles/kml/shapes/';
         marker = new google.maps.Marker({
             position: events[i].latlon,
             map: map,
-            title: events[i].Name
+            title: events[i].Name,
+            icon: iconBase + 'schools_maps.png'
         });
 
         google.maps.event.addListener(marker, 'click', (function(marker, i) {

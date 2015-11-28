@@ -69,7 +69,7 @@
         var map;
         campusPosition = {lat: 33.776020, lng: -84.397111};
         initMap();
-        <!--getEvents(start_date, end_date, 'all');-->
+        getEvents(start_date, end_date, 'all');
 
         $('#datepicker1').datepicker().on('changeDate', function(e) {
             start_date = $('#datepicker1').data('datepicker').getFormattedDate('mm dd, yyyy');

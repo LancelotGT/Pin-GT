@@ -1,38 +1,35 @@
 <!-- Modal -->
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h2 class="modal-title" id="myModalLabel">Create a Pin</h2>
-      </div>
-      <div class="modal-body">
-          <div class="row">
-              <div class="col-md-12 text-left">
-                  <form action="" method="post" class="add-entry">
-                      <dl>
-                          <dt><h2>Name:</h2>
-                          <dd><input type="text" class="form-control" placeholder="Event name here" name="Name"><br>
-                          <dt><h2>Date:</h2>
-                          <dd><input type="text" class="form-control" placeholder="MM/DD/YYYY" name="Date"><br>
-                          <dt><h2>Time:</h2>
-                          <dd><input type="text" class="form-control" placeholder="12:00am - 12:00pm" name="Time"><br>
-                          <dt><h2>Tags:</h2>
-                          <dd><input type="text" class="form-control" placeholder="tag1;tag2;..." name="Tags"><br>
-                          <dt><h2>Location:</h2>
-                          <dd><input type="text" class="form-control" placeholder="Event location here" name="Tags"><br>
-                          <dt><h2>Description:</h2>
-                          <dd><textarea class="form-control" rows="5" name="Description"></textarea><br>
-                          <dd><button type="submit" class="btn btn-primary">Pin event</button>
-                      </dl>
-                  </form>
-              </div>
-          </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" data-dismiss="modal" id="savePin">Save changes</button>
-      </div>
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h2 class="modal-title" id="myModalLabel">Create a Pin</h2>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12 text-left">
+                        <dl>
+                            <dt><h2>Name:</h2>
+                            <dd><input type="text" class="form-control" placeholder="Event name here" name="Name"><br>
+                            <dt><h2>Date:</h2>
+                            <dd><input type="text" class="form-control" placeholder="MM/DD/YYYY" name="Date"><br>
+                            <dt><h2>Time:</h2>
+                            <dd><input type="text" class="form-control" placeholder="12:00am - 12:00pm" name="Time"><br>
+                            <dt><h2>Tags:</h2>
+                            <dd><input type="text" class="form-control" placeholder="tag1;tag2;..." name="Tags"><br>
+                            <dt><h2>Location:</h2>
+                            <dd><input type="text" class="form-control" placeholder="Event location here" name="Tags"><br>
+                            <dt><h2>Description:</h2>
+                            <dd><textarea class="form-control" rows="5" name="Description"></textarea><br>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" id="savePin">Pin event!</button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
