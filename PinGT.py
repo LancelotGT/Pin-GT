@@ -23,16 +23,15 @@ app.config.update(dict(
     MYSQL_DATABASE_DB='PIN'
 ))
 
-def test(test_db):
-    db = connect_db(test_db)
-    db.ensure_tables()
+def test(db):
     # check the initial user_tb
     records = []
     for row in db.get_all_records(db.user_tb):
         records.append(row)
     print records
     # insert record and check
-    add_user(db, db.user_tb, 903012347, "asdf", 0, 'ece', 0)
+    records = []
+    add_user(db, db.user_tb, 11111113, "test3", 0, 'cse', 0)
     for row in db.get_all_records(db.user_tb):
         records.append(row)
     print records
@@ -155,5 +154,8 @@ def logout():
     return redirect(url_for('show_entries'))
 
 if __name__ == '__main__':
-    app.run()
+    # test 
+    test(db_handler)
+    app.run(use_reloader=False)
+
 
