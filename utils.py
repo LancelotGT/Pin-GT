@@ -2,9 +2,11 @@
 Helpers functions used by main view controller
 '''
 
-import urllib2
-import json, math
+import urllib2, json
+import googlemaps
 from crawler import crawler
+
+API_KEY = 'AIzaSyDtaF7VqFqOIQaS0N-gSiWRPfOTI8UXN7Q'
 
 def getEventsByDay(start_date, end_date, tag):
     results = crawler(start_date, end_date)
@@ -34,3 +36,12 @@ def processGeoInfo(entries):
             entry['latlon']['lng'] = round(entry['latlon']['lng'], ndigit)
             l.append(entry)
     return l
+
+'''
+given an location name, return a tuple of (lat, lng)
+'''
+def locationToGeo(loc):
+    gmaps = googlemaps.Client(key=API_KEY)
+    geocode_result = gmaps.geocode(loc)
+    lonlat = geocode_result[0]['geometry']['location']
+    return (lonlat['lat'], lonlat['lng'])
