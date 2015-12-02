@@ -42,6 +42,9 @@ given an location name, return a tuple of (lat, lng)
 '''
 def locationToGeo(loc):
     gmaps = googlemaps.Client(key=API_KEY)
-    geocode_result = gmaps.geocode(loc)
-    lonlat = geocode_result[0]['geometry']['location']
-    return (lonlat['lat'], lonlat['lng'])
+    geocode_result = gmaps.geocode('Georgia Tech ' + loc)
+    if len(geocode_result) > 0:
+        lonlat = geocode_result[0]['geometry']['location']
+        return (lonlat['lat'], lonlat['lng'])
+    else:
+        return None
