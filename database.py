@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 from flaskext.mysql import MySQL
+from crawler_v2 import *
 # import MySQLdb
 
 def connect_db(db_file):
@@ -23,47 +24,46 @@ user_schema = [
 
 ]
 
+# tagId locationId
 location_schema = [
-    ('locationId', 'INT NOT NULL AUTO_INCREMENT'),
+    ('locName', 'VARCHAR(50) NOT NULL'),
     ('longitude', 'FLOAT NOT NULL'),
     ('latitude', 'FLOAT NOT NULL'),
-    ('name', 'VARCHAR(50) NOT NULL'),
-    ('PRIMARY KEY', '(locationId)')      
+    ('PRIMARY KEY', '(locName)')      
 ]
 
 activity_schema = [
     ('activityId', 'INT NOT NULL AUTO_INCREMENT'),
     ('activityName', 'VARCHAR(30)'),
     ('createrId', 'INT'),
-    ('locationId', 'INT NOT NULL'),      # different from progr report
+    ('locName', 'INT NOT NULL'),      # different from progr report
     ('date', 'DATE NOT NULL'),      # FORMAT: 2011-01-01  ## 20150101
     ('time', 'VARCHAR(30)'),        # NOT SURE ABOUT THE TIME FORMAT
     ('description', 'TEXT'),
     ('PRIMARY KEY', '(activityId)'),
-    ('FOREIGN KEY', '(createrId) REFERENCES user_tb（gtId)')      
+    ('FOREIGN KEY', '(createrId) REFERENCES user_tb（gtId)'),
+    ('FOREIGN KEY', '(locName) REFERENCES location_schema（locName)')
 ]
 
-tag_schema = [
-    ('tagId', 'INT NOT NULL AUTO_INCREMENT'),
-    ('tag', 'VARCHAR(50) NOT NULL'),
-    ('PRIMARY KEY', '(tagId)')       
-]
 
 # suppose an activity could have several tags
 actTag_schema = [
     ('Id', 'INT NOT NULL AUTO_INCREMENT'),
     ('activityId', 'INT NOT NULL'),
-    ('tagId', 'INT NOT NULL'),
-    ('PRIMARY KEY', '(Id)')       
+    ('tag', 'INT NOT NULL'),
+    ('PRIMARY KEY', '(Id)'),
+    ('FOREIGN KEY', '(activityId) REFERENCES activity_schema（activityId)')
 ]
 
 # suppose only send notification once (differenr from progr report)
 notification_schema = [
     ('notificationId', 'INT NOT NULL AUTO_INCREMENT'),
-    ('locationId', 'INT NOT NULL'),
+    ('locName', 'INT NOT NULL'),
     ('gtId', 'INT NOT NULL'),
     ('time', 'DATETIME NOT NULL'),      # FORMAT: 2011-12-31 23:59:59
-    ('PRIMARY KEY', '(notificationId)')
+    ('PRIMARY KEY', '(notificationId)'),
+    ('FOREIGN KEY', '(locName) REFERENCES location_schema（locName)'),
+    ('FOREIGN KEY', '(gtId) REFERENCES user_schema（gtId)')
 ]
 
 
@@ -111,26 +111,28 @@ class DBWrapper(object):
         self.exe(self._build_create_table_sql(self.notification_tb, notification_schema))      
 
     def _build_insert_sql(self, tb_name, schema):
-        if tb_name == 'user_tb':
+        if tb_name == 'user_tb' or tb_name = 'location_schema':
             question_marks = ', '.join(['%s'] * (len(schema) - 1))
             return "INSERT INTO {0} VALUES ({1})".format(tb_name, question_marks)
-        elif tb_name == 'activity_tb':
-            question_marks = ', '.join(['%s'] * (len(schema) - 3))
+        # activity_tb, notification_schema
+        elif tb_name == 'activity_tb' or tb_name == 'notification_schema':
+            question_marks = ', '.join(['%s'] * (len(schema) - 4))
             col_insert = []
             for i, col in enumerate(schema):
-                if i not in [0,7,8]:
+                if i in range(1, len(schema) - 3):
                     col_insert.append(schema[i][0])
             col_insert_str = ', '.join(col_insert)
             col_insert_str = '(' + col_insert_str + ')'
             return "INSERT INTO {0} VALUES ({1})".format(tb_name + col_insert_str, question_marks)
+        # actTag_schema
         else:
-            question_marks = ', '.join(['%s'] * (len(schema) - 2))  
+            question_marks = ', '.join(['%s'] * (len(schema) - 3))
             col_insert = []
             for i, col in enumerate(schema):
-                if i != 0 and i != (len(schema) - 1):
+                if i in range(1, len(schema) - 2):
                     col_insert.append(schema[i][0])
             col_insert_str = ', '.join(col_insert)
-            col_insert_str = '(' + col_insert_str + ')'   
+            col_insert_str = '(' + col_insert_str + ')'
             return "INSERT INTO {0} VALUES ({1})".format(tb_name + col_insert_str, question_marks)
 
     def exe(self, sql, params=None):
