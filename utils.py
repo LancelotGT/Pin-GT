@@ -3,10 +3,7 @@ Helpers functions used by main view controller
 '''
 
 import urllib2, json
-import googlemaps
 from crawler import crawler
-
-API_KEY = 'AIzaSyDtaF7VqFqOIQaS0N-gSiWRPfOTI8UXN7Q'
 
 def getEventsByDay(start_date, end_date, tag):
     results = crawler(start_date, end_date)
@@ -38,13 +35,21 @@ def processGeoInfo(entries):
     return l
 
 '''
-given an location name, return a tuple of (lat, lng)
+given an array of location name, return a tuple of (lat, lng)
 '''
-def locationToGeo(loc):
-    gmaps = googlemaps.Client(key=API_KEY)
-    geocode_result = gmaps.geocode('Georgia Tech ' + loc)
-    if len(geocode_result) > 0:
-        lonlat = geocode_result[0]['geometry']['location']
-        return (lonlat['lat'], lonlat['lng'])
-    else:
-        return None
+def locationToGeo(locations):
+    baseURL = "https://maps.googleapis.com/maps/api/geocode/json?address="
+    l = []
+    for loc in locations:
+        url = baseURL + "Georgia%20Tech,%20" + loc
+        url = url.replace(" ", "%20")
+        raw = urllib2.urlopen(url)
+        raw = raw.read()
+        resp = json.loads(raw)
+        if len(resp["results"]) > 0:
+            response = resp["results"][0]["geometry"]["location"]
+            ndigit = 7
+            response['lat'] = round(response['lat'], ndigit)
+            response['lng'] = round(response['lng'], ndigit)
+            l.append((response['lat'], response['lng']))
+    return l
