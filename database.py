@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-import os
-from flaskext.mysql import MySQL
-from crawler_v2 import *
+# import os
+# from flaskext.mysql import MySQL
 # import MySQLdb
 
 def connect_db(db_file):
@@ -14,10 +13,21 @@ def add_user(db, gtId, password, gender, major, grade):
     db.insert_rows(db.user_tb, user_schema, iter_list)
 
 # insert a new event
-def add_event(db, activityName, createrId, locName, date, time, description, tags):
+def add_event(db, activityName, createrId, locName, lat, lon, date, time, description, tags):
+
+    if date == '00000000':
+        return
+
+    # insert location into location_tb
+    loc_list = []
+    loc_list.append((locName, lon, lat))
+    print loc_list[0]
+    db.insert_rows(db.location_tb, location_schema, loc_list)
+
     # insert into activity_tb
     iter_list = []
     iter_list.append((activityName, createrId, locName, date, time, description))
+    print iter_list[0]
     db.insert_rows(db.activity_tb, activity_schema, iter_list)
     # insert into actTag_tb
     iter_list = []
@@ -42,7 +52,7 @@ user_schema = [
 
 # tagId locationId
 location_schema = [
-    ('locName', 'VARCHAR(50) NOT NULL'),
+    ('locName', 'VARCHAR(100) NOT NULL'),
     ('longitude', 'FLOAT NOT NULL'),
     ('latitude', 'FLOAT NOT NULL'),
     ('PRIMARY KEY', '(locName)')      
@@ -50,15 +60,15 @@ location_schema = [
 
 activity_schema = [
     ('activityId', 'INT NOT NULL AUTO_INCREMENT'),
-    ('activityName', 'VARCHAR(30)'),
-    ('createrId', 'INT'),
-    ('locName', 'INT NOT NULL'),      # different from progr report
+    ('activityName', 'VARCHAR(150)'),
+    ('gtId', 'INT NOT NULL'),
+    ('locName', 'VARCHAR(50) NOT NULL'),      # different from progr report
     ('date', 'DATE NOT NULL'),      # FORMAT: 2011-01-01  ## 20150101
     ('time', 'VARCHAR(30)'),        # NOT SURE ABOUT THE TIME FORMAT
     ('description', 'TEXT'),
     ('PRIMARY KEY', '(activityId)'),
-    ('FOREIGN KEY', '(createrId) REFERENCES user_tb（gtId)'),
-    ('FOREIGN KEY', '(locName) REFERENCES location_schema（locName)')
+    ('FOREIGN KEY', '(gtId) REFERENCES user_tb (gtId)'),
+    ('FOREIGN KEY', '(locName) REFERENCES location_tb (locName)')
 ]
 
 
@@ -66,22 +76,21 @@ activity_schema = [
 actTag_schema = [
     ('Id', 'INT NOT NULL AUTO_INCREMENT'),
     ('activityId', 'INT NOT NULL'),
-    ('tag', 'INT NOT NULL'),
+    ('tag', 'VARCHAR(30) NOT NULL'),
     ('PRIMARY KEY', '(Id)'),
-    ('FOREIGN KEY', '(activityId) REFERENCES activity_schema（activityId)')
+    ('FOREIGN KEY', '(activityId) REFERENCES activity_tb (activityId)')
 ]
 
 # suppose only send notification once (differenr from progr report)
 notification_schema = [
     ('notificationId', 'INT NOT NULL AUTO_INCREMENT'),
-    ('locName', 'INT NOT NULL'),
+    ('locName', 'VARCHAR(50) NOT NULL'),
     ('gtId', 'INT NOT NULL'),
     ('time', 'DATETIME NOT NULL'),      # FORMAT: 2011-12-31 23:59:59
     ('PRIMARY KEY', '(notificationId)'),
-    ('FOREIGN KEY', '(locName) REFERENCES location_schema（locName)'),
-    ('FOREIGN KEY', '(gtId) REFERENCES user_schema（gtId)')
+    ('FOREIGN KEY', '(locName) REFERENCES location_tb (locName)'),
+    ('FOREIGN KEY', '(gtId) REFERENCES user_tb (gtId)')
 ]
-
 
 class DBWrapper(object):
     """
@@ -94,7 +103,6 @@ class DBWrapper(object):
         self.user_tb = 'user_tb'
         self.location_tb = 'location_tb'
         self.activity_tb = 'activity_tb'
-        self.tag_tb = 'tag_tb'
         self.actTag_tb = 'actTag_tb'
         self.notification_tb = 'notification_tb'
         self.conn()
@@ -122,14 +130,13 @@ class DBWrapper(object):
         self.exe(self._build_create_table_sql(self.user_tb, user_schema))
         self.exe(self._build_create_table_sql(self.location_tb, location_schema))
         self.exe(self._build_create_table_sql(self.activity_tb, activity_schema))
-        self.exe(self._build_create_table_sql(self.tag_tb, tag_schema))
         self.exe(self._build_create_table_sql(self.actTag_tb, actTag_schema))
         self.exe(self._build_create_table_sql(self.notification_tb, notification_schema))      
 
     def _build_insert_sql(self, tb_name, schema):
-        if tb_name == 'user_tb' or tb_name = 'location_schema':
+        if tb_name == 'user_tb' or tb_name == 'location_tb':
             question_marks = ', '.join(['%s'] * (len(schema) - 1))
-            return "INSERT INTO {0} VALUES ({1})".format(tb_name, question_marks)
+            return "INSERT IGNORE INTO {0} VALUES ({1})".format(tb_name, question_marks)
         # activity_tb, notification_schema
         elif tb_name == 'activity_tb' or tb_name == 'notification_schema':
             question_marks = ', '.join(['%s'] * (len(schema) - 4))
@@ -139,7 +146,7 @@ class DBWrapper(object):
                     col_insert.append(schema[i][0])
             col_insert_str = ', '.join(col_insert)
             col_insert_str = '(' + col_insert_str + ')'
-            return "INSERT INTO {0} VALUES ({1})".format(tb_name + col_insert_str, question_marks)
+            return "INSERT IGNORE INTO {0} VALUES ({1})".format(tb_name + col_insert_str, question_marks)
         # actTag_schema
         else:
             question_marks = ', '.join(['%s'] * (len(schema) - 3))
@@ -149,7 +156,7 @@ class DBWrapper(object):
                     col_insert.append(schema[i][0])
             col_insert_str = ', '.join(col_insert)
             col_insert_str = '(' + col_insert_str + ')'
-            return "INSERT INTO {0} VALUES ({1})".format(tb_name + col_insert_str, question_marks)
+            return "INSERT IGNORE INTO {0} VALUES ({1})".format(tb_name + col_insert_str, question_marks)
 
     def exe(self, sql, params=None):
         if params:
@@ -163,6 +170,7 @@ class DBWrapper(object):
 
     def insert_rows(self, tb_name, schema, iter_list):
         sql = self._build_insert_sql(tb_name, schema)
+
         for values in iter_list:
             self.c.execute(sql, tuple(values))
         self.commit()
@@ -178,16 +186,17 @@ class DBWrapper(object):
         return self.c.fetchone()
 
     def get_record_by_activityName(self, activityName, date):
-        sql = ("SELECT * FROM {0} WHERE " + str(self.activity_schema[1][0]) + " = %s" + " AND " + str(self.activity_schema[4][0]) + " = %s").format(self.activity_tb)
+        sql = ("SELECT * FROM {0} WHERE " + str(activity_schema[1][0]) + " = %s" + " AND " + str(activity_schema[4][0]) + " = %s").format(self.activity_tb)
         self.exe(sql, (activityName, date))
         return self.c.fetchone()
 
     # get event according to start date, end date and tags
     def get_event_by_date_tag(self, start_date, end_date, tag):
+        pass
         '''
         start_date format: 2011-12-31
         '''
-        if tag == '':
+        # if tag == '':
 
     '''def update_record_by_id(self, table, Id, updates):
         sql = "UPDATE {0} SET nickname=?, accuracy=?, rmse=?, submission=?, \

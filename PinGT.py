@@ -4,8 +4,9 @@ import os
 from flaskext.mysql import MySQL
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, flash, jsonify
-from database import connect_db, add_user
+from database import connect_db, add_user, add_event
 from utils import *
+from crawler import *
 
 # create our little application :)
 app = Flask(__name__)
@@ -43,31 +44,8 @@ db.init_app(app)
 db_handler = connect_db(db)
 db_handler.ensure_tables()
 
-# test(db)
-
-print "try to connect database..."
-conn = db.connect()
-print  "connection complete"
-cur = conn.cursor()
-
-def get_cursor():
-    """Connects to the specific database."""
-    return conn.cursor()
-
-def commit():
-    conn.commit()
-
-def init_db():
-    with app.open_resource('schema.sql', mode='r') as f:
-        get_cursor().executescript(f.read())
-    commit()
-
 @app.route('/')
 def show_entries():
-    # cur = get_cursor()
-    # cur.execute('select title, text from entries')
-    # entries = [dict(title=row[0], text=row[1]) for row in cur.fetchall()]
-
     return render_template('show_entries.html')
 
 '''
@@ -144,6 +122,7 @@ def register():
     print "current user table: "
     for row in db_handler.get_all_records(db_handler.user_tb):
         print row
+
     session['logged_in'] = True
     return redirect(url_for('show_entries'))
 
@@ -153,9 +132,21 @@ def logout():
     flash('You were logged out')
     return redirect(url_for('show_entries'))
 
-if __name__ == '__main__':
-    # test 
-    test(db_handler)
-    app.run(use_reloader=False)
+def populateData(start_date, end_date):
+    events = crawler(start_date, end_date)
+    events = processGeoInfo(events)
 
+    # populate data into db
+    for e in events:
+        try:
+            add_event(db_handler, e['Name'], e['CreatorId'], e['Location'], e['latlon']['lat'], \
+                e['latlon']['lng'], e['Date'], e['Time'], e['Description'], e['Tag'])
+        except:
+            continue
+
+if __name__ == '__main__':
+    # app.run(use_reloader=False)
+    start_date  = '2015/11/01'
+    end_date  = '2015/11/20'
+    populateData(start_date, end_date)
 
