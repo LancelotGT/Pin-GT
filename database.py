@@ -24,7 +24,7 @@ user_schema = [
 ]
 
 location_schema = [
-    ('locationId', 'INT NOT NULL'),
+    ('locationId', 'INT NOT NULL AUTO_INCREMENT'),
     ('longitude', 'FLOAT NOT NULL'),
     ('latitude', 'FLOAT NOT NULL'),
     ('name', 'VARCHAR(50) NOT NULL'),
@@ -32,24 +32,26 @@ location_schema = [
 ]
 
 activity_schema = [
-    ('activityId', 'INT NOT NULL'),
+    ('activityId', 'INT NOT NULL AUTO_INCREMENT'),
+    ('activityName', 'VARCHAR(30)'),
+    ('createrId', 'INT'),
     ('locationId', 'INT NOT NULL'),      # different from progr report
-    ('date', 'DATE NOT NULL'),      # FORMAT: 2011-01-01
+    ('date', 'DATE NOT NULL'),      # FORMAT: 2011-01-01  ## 20150101
     ('time', 'VARCHAR(30)'),        # NOT SURE ABOUT THE TIME FORMAT
     ('description', 'TEXT'),
-    ('source', 'VARCHAR(50)'),
-    ('PRIMARY KEY', '(activityId)')      
+    ('PRIMARY KEY', '(activityId)'),
+    ('FOREIGN KEY', '(createrId) REFERENCES user_tb（gtId)')      
 ]
 
 tag_schema = [
-    ('tagId', 'INT NOT NULL'),
+    ('tagId', 'INT NOT NULL AUTO_INCREMENT'),
     ('tag', 'VARCHAR(50) NOT NULL'),
     ('PRIMARY KEY', '(tagId)')       
 ]
 
 # suppose an activity could have several tags
 actTag_schema = [
-    ('Id', 'INT NOT NULL'),
+    ('Id', 'INT NOT NULL AUTO_INCREMENT'),
     ('activityId', 'INT NOT NULL'),
     ('tagId', 'INT NOT NULL'),
     ('PRIMARY KEY', '(Id)')       
@@ -57,7 +59,7 @@ actTag_schema = [
 
 # suppose only send notification once (differenr from progr report)
 notification_schema = [
-    ('notificationId', 'INT NOT NULL'),
+    ('notificationId', 'INT NOT NULL AUTO_INCREMENT'),
     ('locationId', 'INT NOT NULL'),
     ('gtId', 'INT NOT NULL'),
     ('time', 'DATETIME NOT NULL'),      # FORMAT: 2011-12-31 23:59:59
@@ -109,8 +111,27 @@ class DBWrapper(object):
         self.exe(self._build_create_table_sql(self.notification_tb, notification_schema))      
 
     def _build_insert_sql(self, tb_name, schema):
-        question_marks = ', '.join(['%s'] * (len(schema) - 1))      # length -1 since the last element of schema is pk
-        return "INSERT INTO {0} VALUES ({1})".format(tb_name, question_marks)
+        if tb_name == 'user_tb':
+            question_marks = ', '.join(['%s'] * (len(schema) - 1))
+            return "INSERT INTO {0} VALUES ({1})".format(tb_name, question_marks)
+        elif tb_name == 'activity_tb':
+            question_marks = ', '.join(['%s'] * (len(schema) - 3))
+            col_insert = []
+            for i, col in enumerate(schema):
+                if i not in [0,7,8]:
+                    col_insert.append(schema[i][0])
+            col_insert_str = ', '.join(col_insert)
+            col_insert_str = '(' + col_insert_str + ')'
+            return "INSERT INTO {0} VALUES ({1})".format(tb_name + col_insert_str, question_marks)
+        else:
+            question_marks = ', '.join(['%s'] * (len(schema) - 2))  
+            col_insert = []
+            for i, col in enumerate(schema):
+                if i != 0 and i != (len(schema) - 1):
+                    col_insert.append(schema[i][0])
+            col_insert_str = ', '.join(col_insert)
+            col_insert_str = '(' + col_insert_str + ')'   
+            return "INSERT INTO {0} VALUES ({1})".format(tb_name + col_insert_str, question_marks)
 
     def exe(self, sql, params=None):
         if params:
@@ -131,12 +152,19 @@ class DBWrapper(object):
     def get_all_records(self, table):
         sql = "SELECT * FROM {0}".format(table)
         self.exe(sql)
-        return self.c.fetchall();
+        return self.c.fetchall()
 
     def get_record_by_id(self, table, schema):
         sql = ("SELECT * FROM {0} WHERE " + str(schema[0][0]) + " = %s").format(table)
         self.exe(sql, (ID))
         return self.c.fetchone()
+
+    # get event according to start date, end date and tags
+    def get_event_by_date_tag(self, start_date, end_date, tag):
+        '''
+        start_date format: 2011-12-31
+        '''
+        if tag == '':
 
     '''def update_record_by_id(self, table, Id, updates):
         sql = "UPDATE {0} SET nickname=?, accuracy=?, rmse=?, submission=?, \
