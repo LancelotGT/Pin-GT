@@ -8,10 +8,26 @@ def connect_db(db_file):
     return DBWrapper(db_file)
 
 # insert a new user
-def add_user(db, user_tb, gtId, password, gender, major, grade):
+def add_user(db, gtId, password, gender, major, grade):
     iter_list = []
     iter_list.append((gtId, password, gender, major, grade))
-    db.insert_rows(user_tb, user_schema, iter_list)
+    db.insert_rows(db.user_tb, user_schema, iter_list)
+
+# insert a new event
+def add_event(db, activityName, createrId, locName, date, time, description, tags):
+    # insert into activity_tb
+    iter_list = []
+    iter_list.append((activityName, createrId, locName, date, time, description))
+    db.insert_rows(db.activity_tb, activity_schema, iter_list)
+    # insert into actTag_tb
+    iter_list = []
+    for tag in tags:
+        activity_record = db.get_record_by_activityName(activityName, date)
+        activityId = activity_record[0]
+        iter_list.append((activityId, tag))
+    db.insert_rows(db.actTag_tb, actTag_schema, iter_list)
+
+
 
 user_schema = [
     ('gtId', 'INT NOT NULL'),
@@ -156,9 +172,14 @@ class DBWrapper(object):
         self.exe(sql)
         return self.c.fetchall()
 
-    def get_record_by_id(self, table, schema):
+    def get_record_by_id(self, table, schema, id):
         sql = ("SELECT * FROM {0} WHERE " + str(schema[0][0]) + " = %s").format(table)
-        self.exe(sql, (ID))
+        self.exe(sql, (id,))
+        return self.c.fetchone()
+
+    def get_record_by_activityName(self, activityName, date):
+        sql = ("SELECT * FROM {0} WHERE " + str(self.activity_schema[1][0]) + " = %s" + " AND " + str(self.activity_schema[4][0]) + " = %s").format(self.activity_tb)
+        self.exe(sql, (activityName, date))
         return self.c.fetchone()
 
     # get event according to start date, end date and tags
