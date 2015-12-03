@@ -1,5 +1,4 @@
 __author__ = 'Grueo'
-import googlemaps
 import calendar
 import urllib
 import urllib2

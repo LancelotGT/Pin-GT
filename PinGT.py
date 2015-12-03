@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from flaskext.mysql import MySQL
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, flash, jsonify
-from database import connect_db, add_user, add_event, select_activity, drop_all_tables
+from database import init_db, add_user, add_event, select_activity
 from crawler import *
 
 # create our little application :)
@@ -23,11 +22,7 @@ app.config.update(dict(
 ))
 
 app.config.from_object(__name__)
-db = MySQL()
-db.init_app(app)
-
-db_handler = connect_db(db)
-db_handler.ensure_tables()
+db_handler = init_db(app)
 
 @app.route('/')
 def show_entries():
@@ -53,8 +48,8 @@ def events():
         location = request.json['location']
         latlon = request.json['latlon']
         description = request.json['description']
-        pseudoID = '903066777'
-        add_event(db_handler, name, pseudoID, location, latlon['lat'], latlon['lon'], \
+        gtID = session['username']
+        add_event(db_handler, name, gtID, location, latlon['lat'], latlon['lon'], \
                   date, time, description, tags)
         return "OK"
     return redirect(url_for('/'))
@@ -73,6 +68,7 @@ def login():
         elif request.form['password'] != key_pairs[int(request.form['username'])]:
             error = 'Invalid password'
         else:
+            session['username'] = id
             session['logged_in'] = True
             flash('You were logged in')
             return redirect(url_for('show_entries'))

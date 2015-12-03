@@ -1,5 +1,17 @@
 # -*- coding: utf-8 -*-
 
+from flaskext.mysql import MySQL
+
+'''
+Several db connection helpers used by app view
+'''
+def init_db(app):
+    db = MySQL()
+    db.init_app(app)
+    db_handler = connect_db(db)
+    db_handler.ensure_tables()
+    return db_handler
+
 def connect_db(db_file):
     return DBWrapper(db_file)
 
@@ -64,6 +76,11 @@ def drop_all_tables(db):
     db.exe(sql)
     sql = "drop table " + db.location_tb;
     db.exe(sql)
+
+
+'''
+Private db stuff here
+'''
 
 user_schema = [
     ('gtId', 'INT NOT NULL'),

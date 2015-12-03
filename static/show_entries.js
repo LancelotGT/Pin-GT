@@ -104,15 +104,15 @@ function placeMarkerAndPanTo(latlng, map, name, time, date, loc, tags, descripti
     '</div>'+
     '</div><hr>';
 
-  var infoWindow = new google.maps.InfoWindow();
-  infoWindow.setContent(contentString);
-  google.maps.event.addListener(marker, 'click', (function(marker) {
-    return function() {
-        infoWindow.setContent(contentString);
-        infoWindow.open(map, marker);
-    }
-  })(marker));
-  map.panTo(latlng);
+    var infoWindow = new google.maps.InfoWindow();
+    infoWindow.setContent(contentString);
+    google.maps.event.addListener(marker, 'click', (function(marker) {
+        return function() {
+            infoWindow.setContent(contentString);
+            infoWindow.open(map, marker);
+        }
+    })(marker));
+    map.panTo(latlng);
 }
 
 function getEvents(startDate, endDate, tag) {
