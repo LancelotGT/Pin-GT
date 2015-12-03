@@ -13,7 +13,7 @@
                             <dt><h2>Name:</h2>
                             <dd><input type="text" class="form-control" value="Video games" name="Name"><br>
                             <dt><h2>Date:</h2>
-                            <dd><input type="text" class="form-control" value="2015/12/12" name="Date"><br>
+                            <dd><input type="text" class="form-control" id="event_date" value="2015/12/12" name="Date"><br>
                             <dt><h2>Time:</h2>
                             <dd><input type="text" class="form-control" value="12:00am - 12:00pm" name="Time"><br>
                             <dt><h2>Tags:</h2>
@@ -33,3 +33,18 @@
         </div>
     </div>
 </div>
+
+<script>
+    var today = new Date();
+    var dd = today.getDate();
+    var mm = today.getMonth()+1; //January is 0!
+    var yyyy = today.getFullYear();
+
+    if(dd < 10)
+        dd = '0' + dd;
+    if(mm<10)
+        mm = '0' + mm;
+
+    var today = yyyy + '/' + mm + '/' + dd;
+    $('#event_date').val(today);
+</script>

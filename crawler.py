@@ -6,7 +6,7 @@ import json
 import re
 import pandas as pd
 import sys
-from database import add_event
+from database import add_activity
 reload(sys)
 sys.setdefaultencoding('utf-8')
 

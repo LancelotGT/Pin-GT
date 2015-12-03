@@ -22,7 +22,7 @@ def add_user(db, gtId, password, gender, major, grade):
     db.insert_rows(db.user_tb, user_schema, iter_list)
 
 # insert a new event
-def add_event(db, activityName, createrId, locName, lat, lon, date, time, description, tags):
+def add_activity(db, activityName, createrId, locName, lat, lon, date, time, description, tags):
 
     if date == '00000000': # skip if no date provided
         return
@@ -43,6 +43,15 @@ def add_event(db, activityName, createrId, locName, lat, lon, date, time, descri
         activityId = activity_record[0]
         iter_list.append((activityId, tag))
     db.insert_rows(db.actTag_tb, actTag_schema, iter_list)
+
+# get activity given name and date
+def get_activity(db, activityId):
+    record = db.get_record_by_activityId(activityId)
+    return record
+
+def delete_activity(db, activityId):
+    db.delete_tag_by_activityId(activityId)
+    db.delete_record_by_activityId(activityId)
 
 def select_activity(db, start_date, end_date, tag):
     activityRecords = db.get_activity_by_date(start_date, end_date)
@@ -65,6 +74,7 @@ def select_activity(db, start_date, end_date, tag):
                 'latlon': loc
             }
             responses.append(d)
+    print responses
     return responses
 
 def drop_all_tables(db):
@@ -231,6 +241,11 @@ class DBWrapper(object):
         self.exe(sql, (activityName, date))
         return self.c.fetchone()
 
+    def get_record_by_activityId(self, activityId):
+        sql = ("SELECT * FROM {0} WHERE " + str(activity_schema[0][0]) + " = %s").format(self.activity_tb)
+        self.exe(sql, (activityId, ))
+        return self.c.fetchone()
+
     def get_record_by_locationName(self, locationName):
         sql = ("SELECT * FROM {0} WHERE " + str(location_schema[0][0]) + " = %s").format(self.location_tb)
         self.exe(sql, (locationName, ))
@@ -246,6 +261,16 @@ class DBWrapper(object):
         sql = ("SELECT * FROM {0} WHERE " + str(actTag_schema[0][0]) + " = %s").format(self.actTag_tb)
         self.exe(sql, (activityId, ))
         return self.c.fetchall()
+
+    def delete_record_by_activityId(self, activityId):
+        sql = ("DELETE FROM {0} WHERE " + str(activity_schema[0][0]) + " = %s").format(self.activity_tb)
+        self.exe(sql, (activityId, ))
+        self.commit()
+
+    def delete_tag_by_activityId(self, activityId):
+        sql = ("DELETE FROM {0} WHERE " + str(actTag_schema[0][0]) + " = %s").format(self.actTag_tb)
+        self.exe(sql, (activityId, ))
+        self.commit()
 
     # def update_record_by_id(self, table, Id, updates):
     #     sql = "UPDATE {0} SET nickname=?, accuracy=?, rmse=?, submission=?, \

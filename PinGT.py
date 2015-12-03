@@ -2,7 +2,8 @@
 
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, flash, jsonify
-from database import init_db, add_user, add_event, select_activity
+from database import init_db, add_user, add_activity, select_activity, \
+    get_activity, delete_activity
 from crawler import *
 
 # create our little application :)
@@ -31,7 +32,7 @@ def show_entries():
 '''
 conduct heavy lifting work for events-related db communication
 '''
-@app.route('/events', methods=['GET', 'POST'])
+@app.route('/events', methods=['GET', 'POST', 'DELETE'])
 def events():
     error = None
     if request.method == "GET":
@@ -49,9 +50,20 @@ def events():
         latlon = request.json['latlon']
         description = request.json['description']
         gtID = session['username']
-        add_event(db_handler, name, gtID, location, latlon['lat'], latlon['lon'], \
+        add_activity(db_handler, name, gtID, location, latlon['lat'], latlon['lon'], \
                   date, time, description, tags)
         return "OK"
+    elif request.method == "DELETE":
+        activityID = long(request.json['activityID'])
+        act = get_activity(db_handler, activityID)
+        creatorID = act[2]
+        gtID = long(session['username'])
+        if gtID == creatorID:
+            delete_activity(db_handler, activityID)
+            return "OK"
+        else:
+            return "Not authorized", 403
+
     return redirect(url_for('/'))
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -120,7 +132,7 @@ def populateData(start_date, end_date):
     # populate data into db
     for e in events:
         try:
-            add_event(db_handler, e['Name'], e['CreatorId'], e['Location'], e['latlon']['lat'], \
+            add_activity(db_handler, e['Name'], e['CreatorId'], e['Location'], e['latlon']['lat'], \
                 e['latlon']['lng'], e['Date'], e['Time'], e['Description'], e['Tag'])
         except:
             continue

@@ -92,7 +92,6 @@ function placeMarkerAndPanTo(latlng, map, name, time, date, loc, tags, descripti
     '</h4><h4>Tags:&nbsp';
 
     tags = tags.split(';');
-    console.log(tags);
     for (var k = 0; k < tags.length; k++) {
         contentString = contentString + tags[k] + "&nbsp";
     }
@@ -102,7 +101,10 @@ function placeMarkerAndPanTo(latlng, map, name, time, date, loc, tags, descripti
     description +
     '</p>' +
     '</div>'+
-    '</div><hr>';
+    '</div><hr>' +
+    '<button onclick="deleteEvent(' +
+    activityId +
+    ')">Delete event</button>';
 
     var infoWindow = new google.maps.InfoWindow();
     infoWindow.setContent(contentString);
@@ -158,9 +160,30 @@ function postEvent(name, date, time, tags, location, latlon, description) {
     });
 }
 
+function deleteEvent(activityId) {
+    input = {
+        'activityID': activityId
+    }
+
+    $.ajax({
+        url: '/events',
+        method: "DELETE",
+        contentType: 'application/json;charset=UTF-8',
+        data: JSON.stringify(input),
+        context: document.body,
+        success: function(data) {
+            initMap();
+            getEvents(start_date, end_date, $('#tags option:selected').text());
+        }
+    });
+}
+
 function addEventInfo(data) {
     var events = data.events // An array of events
     var contentStrings = [];
+    var names = [];
+    var descriptions = [];
+    var locs = [];
 
     for (var i = 0; i < events.length; i++) {
         var name = events[i].Name;
@@ -173,6 +196,7 @@ function addEventInfo(data) {
         for (var j = 0; j < events.length; j++) {
             if (events[j].latlon[1] == position[1] && events[j].latlon[0] == position[0]) {
                 name = events[j].Name;
+                activityId = events[j].ActivityId;
                 description = events[j].Description;
                 loc = events[j].Location;
                 time = events[j].Time;
@@ -202,7 +226,10 @@ function addEventInfo(data) {
                 description +
                 '</p>' +
                 '</div>'+
-                '</div><hr>';
+                '</div><hr>' +
+                '<button onclick="deleteEvent(' +
+                activityId +
+                ')">Delete event</button>';
             }
         }
         contentStrings.push(contentString);
@@ -227,6 +254,7 @@ function addEventInfo(data) {
 
         google.maps.event.addListener(marker, 'click', (function(marker, i) {
             return function() {
+                console.log(events[i]);
                 infoWindow.setContent(contentStrings[i]);
                 infoWindow.open(map, marker);
             }
