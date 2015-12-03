@@ -16,9 +16,10 @@ function initMap() {
         var date = $("input[name=Date]").val();
         var time = $("input[name=Time]").val();
         var tags = $("input[name=Tags]").val();
-        var location = $("input[name=Tags]").val();
+        var location = $("input[name=Location]").val();
         var description = $("textarea[name=Description]").val();
-        postEvent(name, date, time, tags, location, description);
+        var latlon = {'lat': e.latLng.lat(), 'lon': e.latLng.lng()};
+        postEvent(name, date, time, tags, location, latlon, description);
         placeMarkerAndPanTo(e.latLng, map, name, time, date, location, tags, description);
     })
   });
@@ -66,10 +67,10 @@ function customizeMap() {
 ]);
 
 }
-function placeMarkerAndPanTo(latLng, map, name, time, date, loc, tags, description) {
+function placeMarkerAndPanTo(latlng, map, name, time, date, loc, tags, description) {
     var iconBase = 'https://maps.google.com/mapfiles/kml/shapes/';
     var marker = new google.maps.Marker({
-        position: latLng,
+        position: latlng,
         map: map,
         title: name,
         icon: iconBase + 'schools_maps.png'
@@ -89,6 +90,9 @@ function placeMarkerAndPanTo(latLng, map, name, time, date, loc, tags, descripti
     '<h4>Location:&nbsp' +
     loc +
     '</h4><h4>Tags:&nbsp';
+
+    tags = tags.split(';');
+    console.log(tags);
     for (var k = 0; k < tags.length; k++) {
         contentString = contentString + tags[k] + "&nbsp";
     }
@@ -108,7 +112,7 @@ function placeMarkerAndPanTo(latLng, map, name, time, date, loc, tags, descripti
         infoWindow.open(map, marker);
     }
   })(marker));
-  map.panTo(latLng);
+  map.panTo(latlng);
 }
 
 function getEvents(startDate, endDate, tag) {
@@ -119,7 +123,6 @@ function getEvents(startDate, endDate, tag) {
         'endDate': endDate,
         'tag': tag
     }
-    console.log(startDate, endDate, tag);
     $.ajax({
         url: '/events',
         method: "GET",
@@ -130,15 +133,16 @@ function getEvents(startDate, endDate, tag) {
     });
 }
 
-function postEvent(name, date, time, tags, location, description) {
+function postEvent(name, date, time, tags, location, latlon, description) {
 
     // add more filter options here
     input = {
         'name': name,
         'date': date,
         'time': time,
-        'tags': tags,
+        'tags': tags.split(';'),
         'location': location,
+        'latlon': latlon,
         'description': description
     }
 
@@ -159,7 +163,6 @@ function addEventInfo(data) {
     var contentStrings = [];
 
     for (var i = 0; i < events.length; i++) {
-        console.log(events[i]);
         var name = events[i].Name;
         var description = events[i].Description;
         var position = events[i].latlon;
@@ -210,7 +213,6 @@ function addEventInfo(data) {
 
     for (var i = 0; i < events.length; i++) {
         var iconBase = 'https://maps.google.com/mapfiles/kml/shapes/';
-        console.log(events[i].latlon);
         var location = {
             'lat': events[i].latlon[1],
             'lng': events[i].latlon[0]

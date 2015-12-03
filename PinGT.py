@@ -51,8 +51,11 @@ def events():
         time = request.json['time']
         tags = request.json['tags']
         location = request.json['location']
+        latlon = request.json['latlon']
         description = request.json['description']
-        print name, date, time, tags, location, description
+        pseudoID = '100000000'
+        add_event(db_handler, name, pseudoID, location, latlon['lat'], latlon['lon'], \
+                  date, time, description, tags)
         return "hello"
     return redirect(url_for('/'))
 
