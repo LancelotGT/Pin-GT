@@ -119,7 +119,7 @@ function getEvents(startDate, endDate, tag) {
         'endDate': endDate,
         'tag': tag
     }
-
+    console.log(startDate, endDate, tag);
     $.ajax({
         url: '/events',
         method: "GET",
@@ -159,6 +159,7 @@ function addEventInfo(data) {
     var contentStrings = [];
 
     for (var i = 0; i < events.length; i++) {
+        console.log(events[i]);
         var name = events[i].Name;
         var description = events[i].Description;
         var position = events[i].latlon;
@@ -167,7 +168,7 @@ function addEventInfo(data) {
         var contentString = '';
 
         for (var j = 0; j < events.length; j++) {
-            if (events[j].latlon.lat == position.lat && events[j].latlon.lon == position.lon) {
+            if (events[j].latlon[1] == position[1] && events[j].latlon[0] == position[0]) {
                 name = events[j].Name;
                 description = events[j].Description;
                 loc = events[j].Location;
@@ -209,8 +210,14 @@ function addEventInfo(data) {
 
     for (var i = 0; i < events.length; i++) {
         var iconBase = 'https://maps.google.com/mapfiles/kml/shapes/';
+        console.log(events[i].latlon);
+        var location = {
+            'lat': events[i].latlon[1],
+            'lng': events[i].latlon[0]
+        }
+
         marker = new google.maps.Marker({
-            position: events[i].latlon,
+            position: location,
             map: map,
             title: events[i].Name,
             icon: iconBase + 'schools_maps.png'

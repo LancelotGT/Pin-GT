@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-# import os
-# from flaskext.mysql import MySQL
-# import MySQLdb
 
 def connect_db(db_file):
     return DBWrapper(db_file)
@@ -15,19 +12,17 @@ def add_user(db, gtId, password, gender, major, grade):
 # insert a new event
 def add_event(db, activityName, createrId, locName, lat, lon, date, time, description, tags):
 
-    if date == '00000000':
+    if date == '00000000': # skip if no date provided
         return
 
     # insert location into location_tb
     loc_list = []
     loc_list.append((locName, lon, lat))
-    print loc_list[0]
     db.insert_rows(db.location_tb, location_schema, loc_list)
 
     # insert into activity_tb
     iter_list = []
     iter_list.append((activityName, createrId, locName, date, time, description))
-    print iter_list[0]
     db.insert_rows(db.activity_tb, activity_schema, iter_list)
     # insert into actTag_tb
     iter_list = []
@@ -37,7 +32,38 @@ def add_event(db, activityName, createrId, locName, lat, lon, date, time, descri
         iter_list.append((activityId, tag))
     db.insert_rows(db.actTag_tb, actTag_schema, iter_list)
 
+def select_activity(db, start_date, end_date, tag):
+    activityRecords = db.get_activity_by_date(start_date, end_date)
+    responses = []
+    for record in activityRecords:
+        t = db.get_tag_by_activityId(record[0])
+        loc = db.get_record_by_locationName(record[3])
+        loc = (float(loc[1]), float(loc[2]))
+        l = [e[1] for e in t]
+        if tag in l or tag == 'All':
+            d = {
+                'ActivityId': record[0],
+                'Name': record[1],
+                'CreatorId': record[2],
+                'Location': record[3],
+                'Date': str(record[4]),
+                'Time': record[5],
+                'Description': record[6],
+                'Tag': l,
+                'latlon': loc
+            }
+            responses.append(d)
+    return responses
 
+def drop_all_tables(db):
+    sql = "drop table " + db.notification_tb;
+    db.exe(sql)
+    sql = "drop table " + db.actTag_tb;
+    db.exe(sql)
+    sql = "drop table " + db.activity_tb;
+    db.exe(sql)
+    sql = "drop table " + db.location_tb;
+    db.exe(sql)
 
 user_schema = [
     ('gtId', 'INT NOT NULL'),
@@ -53,8 +79,8 @@ user_schema = [
 # tagId locationId
 location_schema = [
     ('locName', 'VARCHAR(100) NOT NULL'),
-    ('longitude', 'FLOAT NOT NULL'),
-    ('latitude', 'FLOAT NOT NULL'),
+    ('longitude', 'DOUBLE PRECISION NOT NULL'),
+    ('latitude', 'DOUBLE PRECISION NOT NULL'),
     ('PRIMARY KEY', '(locName)')      
 ]
 
@@ -74,10 +100,9 @@ activity_schema = [
 
 # suppose an activity could have several tags
 actTag_schema = [
-    ('Id', 'INT NOT NULL AUTO_INCREMENT'),
     ('activityId', 'INT NOT NULL'),
     ('tag', 'VARCHAR(30) NOT NULL'),
-    ('PRIMARY KEY', '(Id)'),
+    ('PRIMARY KEY', '(activityId, tag)'),
     ('FOREIGN KEY', '(activityId) REFERENCES activity_tb (activityId)')
 ]
 
@@ -149,10 +174,10 @@ class DBWrapper(object):
             return "INSERT IGNORE INTO {0} VALUES ({1})".format(tb_name + col_insert_str, question_marks)
         # actTag_schema
         else:
-            question_marks = ', '.join(['%s'] * (len(schema) - 3))
+            question_marks = ', '.join(['%s'] * (len(schema) - 2))
             col_insert = []
             for i, col in enumerate(schema):
-                if i in range(1, len(schema) - 2):
+                if i in range(0, len(schema) - 2):
                     col_insert.append(schema[i][0])
             col_insert_str = ', '.join(col_insert)
             col_insert_str = '(' + col_insert_str + ')'
@@ -170,7 +195,6 @@ class DBWrapper(object):
 
     def insert_rows(self, tb_name, schema, iter_list):
         sql = self._build_insert_sql(tb_name, schema)
-
         for values in iter_list:
             self.c.execute(sql, tuple(values))
         self.commit()
@@ -190,13 +214,21 @@ class DBWrapper(object):
         self.exe(sql, (activityName, date))
         return self.c.fetchone()
 
+    def get_record_by_locationName(self, locationName):
+        sql = ("SELECT * FROM {0} WHERE " + str(location_schema[0][0]) + " = %s").format(self.location_tb)
+        self.exe(sql, (locationName, ))
+        return self.c.fetchone()
+
     # get event according to start date, end date and tags
-    def get_event_by_date_tag(self, start_date, end_date, tag):
-        pass
-        '''
-        start_date format: 2011-12-31
-        '''
-        # if tag == '':
+    def get_activity_by_date(self, start_date, end_date):
+        sql = ("SELECT * FROM {0} WHERE " + str(activity_schema[4][0]) + " between %s" + " AND %s").format(self.activity_tb)
+        self.exe(sql, (start_date, end_date))
+        return self.c.fetchall()
+
+    def get_tag_by_activityId(self, activityId):
+        sql = ("SELECT * FROM {0} WHERE " + str(actTag_schema[0][0]) + " = %s").format(self.actTag_tb)
+        self.exe(sql, (activityId, ))
+        return self.c.fetchall()
 
     '''def update_record_by_id(self, table, Id, updates):
         sql = "UPDATE {0} SET nickname=?, accuracy=?, rmse=?, submission=?, \

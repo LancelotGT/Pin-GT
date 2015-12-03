@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import os
 from flaskext.mysql import MySQL
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, flash, jsonify
-from database import connect_db, add_user, add_event
-from utils import *
+from database import connect_db, add_user, add_event, select_activity, drop_all_tables
 from crawler import *
 
 # create our little application :)
@@ -23,19 +21,6 @@ app.config.update(dict(
     MYSQL_DATABASE_PASSWORD='CS6400',
     MYSQL_DATABASE_DB='PIN'
 ))
-
-def test(db):
-    # check the initial user_tb
-    records = []
-    for row in db.get_all_records(db.user_tb):
-        records.append(row)
-    print records
-    # insert record and check
-    records = []
-    add_user(db, db.user_tb, 11111113, "test3", 0, 'cse', 0)
-    for row in db.get_all_records(db.user_tb):
-        records.append(row)
-    print records
 
 app.config.from_object(__name__)
 db = MySQL()
@@ -58,8 +43,7 @@ def events():
         startDate = request.args.get('startDate', type=str)
         endDate = request.args.get('endDate', type=str)
         tag = request.args.get('tag', type=str)
-        entries = getEventsByDay(startDate, endDate, tag)
-        entries = processGeoInfo(entries)
+        entries = select_activity(db_handler, startDate, endDate, tag)
         return jsonify(events=entries)
     elif request.method == "POST":
         name = request.json['name']
@@ -145,8 +129,10 @@ def populateData(start_date, end_date):
             continue
 
 if __name__ == '__main__':
-    # app.run(use_reloader=False)
-    start_date  = '2015/11/01'
-    end_date  = '2015/11/20'
-    populateData(start_date, end_date)
 
+    start_date  = '2015/11/03'
+    end_date  = '2015/11/20'
+    # drop_all_tables(db_handler)
+    # populateData(start_date, end_date)
+    # select_activity(db_handler, start_date, end_date, 'Lecture')
+    app.run()

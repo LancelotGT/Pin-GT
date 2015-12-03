@@ -72,11 +72,11 @@
         getEvents(start_date, end_date, 'All');
 
         $('#datepicker1').datepicker().on('changeDate', function(e) {
-            start_date = $('#datepicker1').data('datepicker').getFormattedDate('mm dd, yyyy');
+            start_date = $('#datepicker1').data('datepicker').getFormattedDate('yyyy/mm/dd');
         });
 
         $('#datepicker2').datepicker().on('changeDate', function(e) {
-            end_date = $('#datepicker2').data('datepicker').getFormattedDate('mm dd, yyyy');
+            end_date = $('#datepicker2').data('datepicker').getFormattedDate('yyyy/mm/dd');
         });
     });
 
