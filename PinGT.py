@@ -53,10 +53,10 @@ def events():
         location = request.json['location']
         latlon = request.json['latlon']
         description = request.json['description']
-        pseudoID = '100000000'
+        pseudoID = '903066777'
         add_event(db_handler, name, pseudoID, location, latlon['lat'], latlon['lon'], \
                   date, time, description, tags)
-        return "hello"
+        return "OK"
     return redirect(url_for('/'))
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -67,8 +67,6 @@ def login():
         key_pairs = {}
         for row in db_handler.get_all_records(db_handler.user_tb):
             key_pairs[row[0]] = row[1]
-
-        print "user:password pairs in db: ", key_pairs
 
         if int(request.form['username']) not in key_pairs.keys():
             error = 'Invalid username'
@@ -102,14 +100,14 @@ def register():
     grade = request.form['grade']
     major = request.form['major']
     gender = request.form['gender']
-    print "Register input: ", id, password, grade, major, gender
 
-    ### TODO Populate user input into database here
-    add_user(db_handler, db_handler.user_tb, id, password, gender == "male", major, grade == "undergraduate")
+    # populate user info into user table
+    add_user(db_handler, id, password, gender == "male", major, grade == "undergraduate")
     print "current user table: "
     for row in db_handler.get_all_records(db_handler.user_tb):
         print row
 
+    session['username'] = id
     session['logged_in'] = True
     return redirect(url_for('show_entries'))
 
@@ -132,10 +130,4 @@ def populateData(start_date, end_date):
             continue
 
 if __name__ == '__main__':
-
-    start_date  = '2015/11/03'
-    end_date  = '2015/11/20'
-    # drop_all_tables(db_handler)
-    # populateData(start_date, end_date)
-    # select_activity(db_handler, start_date, end_date, 'Lecture')
     app.run()

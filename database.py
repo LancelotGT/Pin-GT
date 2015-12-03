@@ -230,16 +230,14 @@ class DBWrapper(object):
         self.exe(sql, (activityId, ))
         return self.c.fetchall()
 
-    '''def update_record_by_id(self, table, Id, updates):
-        sql = "UPDATE {0} SET nickname=?, accuracy=?, rmse=?, submission=?, \
-         time=? WHERE andrew_id=?".format(table)
-        self.exe(sql, (updates['nickname'], updates['accuracy'], updates['rmse'],
-            updates['submission'], updates['time'], updates['andrew_id']))
-        self.commit()'''
-
-    '''
-    def create_index(self, tb_name, schema):
-        sql = "CREATE INDEX {0}_idx ON {1} ({0})".format(col_name, tb_name)
-        self.exe(sql)
-        self.commit()
-    '''
+    # def update_record_by_id(self, table, Id, updates):
+    #     sql = "UPDATE {0} SET nickname=?, accuracy=?, rmse=?, submission=?, \
+    #      time=? WHERE andrew_id=?".format(table)
+    #     self.exe(sql, (updates['nickname'], updates['accuracy'], updates['rmse'],
+    #         updates['submission'], updates['time'], updates['andrew_id']))
+    #     self.commit()
+    #
+    # def create_index(self, tb_name, schema):
+    #     sql = "CREATE INDEX {0}_idx ON {1} ({0})".format(col_name, tb_name)
+    #     self.exe(sql)
+    #     self.commit()

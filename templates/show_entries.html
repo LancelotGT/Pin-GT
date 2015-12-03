@@ -63,8 +63,19 @@
 <script src="{{ url_for('static', filename='show_entries.js') }}"></script>
 
 <script>
-    var start_date='2015/11/17';
-    var end_date='2015/11/18';
+    var today = new Date();
+    var dd = today.getDate();
+    var mm = today.getMonth()+1; //January is 0!
+    var yyyy = today.getFullYear();
+
+    if(dd < 10)
+        dd = '0' + dd;
+    if(mm<10)
+        mm = '0' + mm;
+
+    var start_date = yyyy + '/' + mm + '/' + dd;
+    var end_date = start_date;
+
     $(document).ready(function() {
         var map;
         campusPosition = {lat: 33.776020, lng: -84.397111};
@@ -74,10 +85,12 @@
         $('#datepicker1').datepicker().on('changeDate', function(e) {
             start_date = $('#datepicker1').data('datepicker').getFormattedDate('yyyy/mm/dd');
         });
+        $('#datepicker1').datepicker('setDate', new Date());
 
         $('#datepicker2').datepicker().on('changeDate', function(e) {
             end_date = $('#datepicker2').data('datepicker').getFormattedDate('yyyy/mm/dd');
         });
+        $('#datepicker2').datepicker('setDate', new Date());
     });
 
     $('#submitButton').click(function() {
