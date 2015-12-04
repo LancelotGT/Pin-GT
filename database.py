@@ -271,11 +271,6 @@ class DBWrapper(object):
         return self.c.fetchall()
 
     def delete_record_by_activityId(self, activityId):
-        sql = ("DELETE FROM {0} WHERE " + str(actTag_schema[0][0]) + " = %s").format(self.actTag_tb)
-        self.exe(sql, (activityId, ))
-        self.commit()
-
-    def delete_record_by_activityId(self, activityId):
         sql = ("DELETE FROM {0} WHERE " + str(activity_schema[0][0]) + " = %s").format(self.activity_tb)
         self.exe(sql, (activityId, ))
         self.commit()
@@ -289,7 +284,5 @@ class DBWrapper(object):
         sql = ("UPDATE {0} SET activityName=%s, date=%s, time=%s, description=%s ")\
             .format(self.activity_tb)
         sql += "WHERE " + str(activity_schema[0][0]) + "=%s"
-        print sql
-        print (name, date, time, description, activityId)
         self.exe(sql, (name, date, time, description, activityId))
         self.commit()

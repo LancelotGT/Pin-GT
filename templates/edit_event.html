@@ -1,0 +1,48 @@
+<!-- Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h2 class="modal-title" id="myModalLabel">Edit a Pin</h2>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12 text-left">
+                        <dl>
+                            <dt><h2>Name:</h2>
+                            <dd><input type="text" class="form-control" id = "edit_name" value="" name="Name"><br>
+                            <dt><h2>Date:</h2>
+                            <dd><input type="text" class="form-control" id="edit_date" value="" name="Date"><br>
+                            <dt><h2>Time:</h2>
+                            <dd><input type="text" class="form-control" id="edit_time" name="Time"><br>
+                            <dt><h2>Tags:</h2>
+                            <dd><input type="text" class="form-control" id="edit_tags" name="Tags"><br>
+                            <dt><h2>Description:</h2>
+                            <dd><textarea class="form-control" rows="5" id="edit_desc"></textarea><br>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" id="saveEditedPin">Save change</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+var today = new Date();
+var dd = today.getDate();
+var mm = today.getMonth()+1; //January is 0!
+var yyyy = today.getFullYear();
+
+if(dd < 10)
+    dd = '0' + dd;
+if(mm<10)
+    mm = '0' + mm;
+
+    var today = yyyy + '/' + mm + '/' + dd;
+    $('#event_date').val(today);
+</script>'
