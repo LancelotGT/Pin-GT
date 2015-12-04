@@ -169,15 +169,6 @@ function edit(i) {
     $("#edit_loc").val(event.Location);
     $("#edit_desc").html(event.Description);
     $('#editModal').modal('toggle');
-    $('#saveEditedPin').click(function() {
-        var name = $("#edit_name").val();
-        var date = $("#edit_date").val();
-        var time = $("#edit_time").val();
-        var tags = $("#edit_tags").val();
-        var location = $("#edit_loc").val();
-        var description = $("#edit_desc").html();
-        editEvent(activityId, name, date, time, tags, location, description);
-    })
 }
 
 function editEvent(activityId, name, date, time, tags, location, description) {

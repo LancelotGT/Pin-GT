@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import re
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, flash, jsonify
 from database import init_db, add_user, add_activity, select_activity, \
@@ -50,6 +51,28 @@ def events():
         latlon = request.json['latlon']
         description = request.json['description']
         gtID = session['username']
+
+        # some input checking
+        if len(name) == 0 or len(date) == 0 or len(time) == 0 or len(tags) == 0 \
+            or len(location) == 0 or (not isinstance(latlon, dict)) \
+            or len(description) == 0 or len(gtID) == 0:
+            return "Bad request", 400
+
+        try:
+            int(gtID)
+        except:
+            return "Bad request", 400
+
+        if not isinstance(tags, list):
+            return "Bad request", 400
+
+        r = re.compile('.{4}-.{2}-.{2}')
+        if not (len(date) == 10):
+            return "Bad request", 400
+        else:
+            if not r.match(date):
+                return "Bad request", 400
+
         add_activity(db_handler, name, gtID, location, latlon['lat'], latlon['lon'], \
                   date, time, description, tags)
         return "OK"
@@ -60,6 +83,21 @@ def events():
         time = request.json['time']
         tags = request.json['tags']
         description = request.json['description']
+
+        # some input checking
+        if len(name) == 0 or len(date) == 0 or len(time) == 0 or len(tags) == 0 \
+            or len(description) == 0:
+            return "Bad request", 400
+
+        if not isinstance(tags, list):
+            return "Bad request", 400
+
+        r = re.compile('.{4}-.{2}-.{2}')
+        if not (len(date) == 10):
+            return "Bad request", 400
+        else:
+            if not r.match(date):
+                return "Bad request", 400
 
         act = get_activity(db_handler, activityID)
         creatorID = act[2]
