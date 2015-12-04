@@ -120,7 +120,7 @@ function placeMarkerAndPanTo(latlng, map, name, time, date, loc, tags, descripti
 function getEvents(startDate, endDate, tag) {
 
     // add more filter options here
-    input = {
+    var input = {
         'startDate': startDate,
         'endDate': endDate,
         'tag': tag
@@ -138,7 +138,7 @@ function getEvents(startDate, endDate, tag) {
 function postEvent(name, date, time, tags, location, latlon, description) {
 
     // add more filter options here
-    input = {
+    var input = {
         'name': name,
         'date': date,
         'time': time,
@@ -160,8 +160,53 @@ function postEvent(name, date, time, tags, location, latlon, description) {
     });
 }
 
+function edit(i) {
+    var event = events[i];
+    $("#edit_name").val(event.Name);
+    $("#edit_date").val(event.Date);
+    $("#edit_time").val(event.Time);
+    $("#edit_tags").val(event.Tag.join(";"));
+    $("#edit_loc").val(event.Location);
+    $("#edit_desc").html(event.Description);
+    $('#editModal').modal('toggle');
+    $('#saveEditedPin').click(function() {
+        var name = $("#edit_name").val();
+        var date = $("#edit_date").val();
+        var time = $("#edit_time").val();
+        var tags = $("#edit_tags").val();
+        var location = $("#edit_loc").val();
+        var description = $("#edit_desc").html();
+        editEvent(activityId, name, date, time, tags, location, description);
+    })
+}
+
+function editEvent(activityId, name, date, time, tags, location, description) {
+
+    var input = {
+        'activityID': activityId,
+        'name': name,
+        'date': date,
+        'time': time,
+        'tags': tags.split(';'),
+        'location': location,
+        'description': description
+    }
+
+    $.ajax({
+        url: '/events',
+        method: "UPDATE",
+        contentType: 'application/json;charset=UTF-8',
+        data: JSON.stringify(input),
+        context: document.body,
+        success: function(data) {
+            initMap();
+            getEvents(start_date, end_date, $('#tags option:selected').text());
+        }
+    });
+}
+
 function deleteEvent(activityId) {
-    input = {
+    var input = {
         'activityID': activityId
     }
 
@@ -179,7 +224,7 @@ function deleteEvent(activityId) {
 }
 
 function addEventInfo(data) {
-    var events = data.events // An array of events
+    events = data.events // An array of events
     var contentStrings = [];
     var names = [];
     var descriptions = [];
@@ -227,6 +272,9 @@ function addEventInfo(data) {
                 '</p>' +
                 '</div>'+
                 '</div><hr>' +
+                '<button onclick="edit(' +
+                j +
+                ')">Edit event</button>' +
                 '<button onclick="deleteEvent(' +
                 activityId +
                 ')">Delete event</button>';
@@ -254,7 +302,6 @@ function addEventInfo(data) {
 
         google.maps.event.addListener(marker, 'click', (function(marker, i) {
             return function() {
-                console.log(events[i]);
                 infoWindow.setContent(contentStrings[i]);
                 infoWindow.open(map, marker);
             }

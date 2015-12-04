@@ -3,7 +3,7 @@
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, flash, jsonify
 from database import init_db, add_user, add_activity, select_activity, \
-    get_activity, delete_activity
+    get_activity, update_activity, delete_activity
 from crawler import *
 
 # create our little application :)
@@ -32,7 +32,7 @@ def show_entries():
 '''
 conduct heavy lifting work for events-related db communication
 '''
-@app.route('/events', methods=['GET', 'POST', 'DELETE'])
+@app.route('/events', methods=['GET', 'POST', 'UPDATE', 'DELETE'])
 def events():
     error = None
     if request.method == "GET":
@@ -53,6 +53,22 @@ def events():
         add_activity(db_handler, name, gtID, location, latlon['lat'], latlon['lon'], \
                   date, time, description, tags)
         return "OK"
+    elif request.method == "UPDATE":
+        activityID = long(request.json['activityID'])
+        name = request.json['name']
+        date = request.json['date']
+        time = request.json['time']
+        tags = request.json['tags']
+        description = request.json['description']
+
+        act = get_activity(db_handler, activityID)
+        creatorID = act[2]
+        gtID = long(session['username'])
+        if gtID == creatorID:
+            update_activity(db_handler, activityID, name, date, time, tags, description)
+            return "OK"
+        else:
+            return "Not authorized", 403
     elif request.method == "DELETE":
         activityID = long(request.json['activityID'])
         act = get_activity(db_handler, activityID)

@@ -49,6 +49,15 @@ def get_activity(db, activityId):
     record = db.get_record_by_activityId(activityId)
     return record
 
+def update_activity(db, activityId, name, date, time, tags, description):
+    record = db.update_activity_by_Id(activityId, name, date, time, description)
+    db.delete_tag_by_activityId(activityId)
+    l = []
+    for tag in tags:
+        l.append((activityId, tag))
+    db.insert_rows(db.actTag_tb, actTag_schema, l)
+    return record
+
 def delete_activity(db, activityId):
     db.delete_tag_by_activityId(activityId)
     db.delete_record_by_activityId(activityId)
@@ -74,7 +83,6 @@ def select_activity(db, start_date, end_date, tag):
                 'latlon': loc
             }
             responses.append(d)
-    print responses
     return responses
 
 def drop_all_tables(db):
@@ -263,6 +271,11 @@ class DBWrapper(object):
         return self.c.fetchall()
 
     def delete_record_by_activityId(self, activityId):
+        sql = ("DELETE FROM {0} WHERE " + str(actTag_schema[0][0]) + " = %s").format(self.actTag_tb)
+        self.exe(sql, (activityId, ))
+        self.commit()
+
+    def delete_record_by_activityId(self, activityId):
         sql = ("DELETE FROM {0} WHERE " + str(activity_schema[0][0]) + " = %s").format(self.activity_tb)
         self.exe(sql, (activityId, ))
         self.commit()
@@ -272,14 +285,11 @@ class DBWrapper(object):
         self.exe(sql, (activityId, ))
         self.commit()
 
-    # def update_record_by_id(self, table, Id, updates):
-    #     sql = "UPDATE {0} SET nickname=?, accuracy=?, rmse=?, submission=?, \
-    #      time=? WHERE andrew_id=?".format(table)
-    #     self.exe(sql, (updates['nickname'], updates['accuracy'], updates['rmse'],
-    #         updates['submission'], updates['time'], updates['andrew_id']))
-    #     self.commit()
-    #
-    # def create_index(self, tb_name, schema):
-    #     sql = "CREATE INDEX {0}_idx ON {1} ({0})".format(col_name, tb_name)
-    #     self.exe(sql)
-    #     self.commit()
+    def update_activity_by_Id(self, activityId, name, date, time, description):
+        sql = ("UPDATE {0} SET activityName=%s, date=%s, time=%s, description=%s ")\
+            .format(self.activity_tb)
+        sql += "WHERE " + str(activity_schema[0][0]) + "=%s"
+        print sql
+        print (name, date, time, description, activityId)
+        self.exe(sql, (name, date, time, description, activityId))
+        self.commit()

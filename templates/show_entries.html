@@ -59,10 +59,12 @@
 </div>
 
 {% include "pin_event.html" %}
+{% include "edit_event.html" %}
 
 <script src="{{ url_for('static', filename='show_entries.js') }}"></script>
 
 <script>
+    var events;
     var today = new Date();
     var dd = today.getDate();
     var mm = today.getMonth()+1; //January is 0!
