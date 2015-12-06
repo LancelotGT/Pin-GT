@@ -31,7 +31,7 @@ server.starttls()
 server.login('cs6400project@gmail.com', 'CS6400PASSWORD')
 
 @app.route('/')
-def showEntries():
+def show_entries():
     return render_template('show_entries.html')
 
 '''
@@ -61,15 +61,12 @@ def events():
             or len(location) == 0 or (not isinstance(latlon, dict)) \
             or len(description) == 0 or len(gtID) == 0:
             return "Bad request", 400
-
         try:
             int(gtID)
         except:
             return "Bad request", 400
-
         if not isinstance(tags, list):
             return "Bad request", 400
-
         r = re.compile('.{4}-.{2}-.{2}')
         if not (len(date) == 10):
             return "Bad request", 400
@@ -92,10 +89,8 @@ def events():
         if len(name) == 0 or len(date) == 0 or len(time) == 0 or len(tags) == 0 \
             or len(description) == 0:
             return "Bad request", 400
-
         if not isinstance(tags, list):
             return "Bad request", 400
-
         r = re.compile('.{4}-.{2}-.{2}')
         if not (len(date) == 10):
             return "Bad request", 400
@@ -113,12 +108,11 @@ def events():
             return "Not authorized", 403
     elif request.method == "DELETE":
         activityID = long(request.json['activityID'])
-        print activityID
         act = get_activity(db_handler, activityID)
         creatorID = act[2]
         gtID = long(session['username'])
-        print creatorID, gtID
         if gtID == creatorID:
+            delete_notification(db_handler, activityID, gtID)
             delete_activity(db_handler, activityID)
             return "OK"
         else:
@@ -140,7 +134,7 @@ def login():
         elif request.form['password'] != key_pairs[int(request.form['username'])]:
             error = 'Invalid password'
         else:
-            session['username'] = id
+            session['username'] = request.form['username']
             session['logged_in'] = True
             flash('You were logged in')
             return redirect(url_for('show_entries'))
@@ -152,22 +146,32 @@ def notification():
     if request.method == "GET": # check whether there is upcoming events
         gtID = session['username']
         events = get_notification(db_handler, gtID)
-
         key_pairs = {}
         for row in db_handler.get_all_records(db_handler.user_tb):
             key_pairs[row[0]] = row[1:]
         user = key_pairs[long(gtID)]
+        pendingEvents = []
         for e in events:
             minutes = calculateTimeLeft(e)
-            print minutes
-            if minutes < 2000:
+            if minutes < 120:
                 pushNotification(user, e, minutes)
-                # delete_notification(db_handler, e[0], gtID)
+                delete_notification(db_handler, e[0], gtID)
+                d = {
+                    'ActivityId': e[0],
+                    'Name': e[1],
+                    'CreatorId': e[2],
+                    'Location': e[3],
+                    'Date': str(e[4]),
+                    'Time': e[5],
+                    'LeftTime': minutes
+                }
+                pendingEvents.append(d)
+        if len(pendingEvents) > 0:
+            return jsonify(events=pendingEvents)
         return "OK"
     elif request.method == "POST": # subscribe an event
         activityID = request.json['activityID']
         gtID = session['username']
-        print gtID, activityID
 
         # some input checking
         if len(gtID) == 0:
@@ -195,15 +199,28 @@ def register():
         if len(request.form['password']) == 0:
             error = "Password cannot be empty"
             return render_template('register.html', error=error)
+        if len(request.form['name']) == 0:
+            error = "Name cannot be empty"
+            return render_template('register.html', error=error)
+        if len(request.form['email']) == 0:
+            error = "Email cannot be empty"
+            return render_template('register.html', error=error)
+        if len(request.form['number']) == 0:
+            error = "Phone number cannot be empty"
+            return render_template('register.html', error=error)
 
     id = request.form['id']
     password = request.form['password']
     grade = request.form['grade']
     major = request.form['major']
     gender = request.form['gender']
+    name = request.form['name']
+    number = request.form['number']
+    email = request.form['email']
 
     # populate user info into user table
-    add_user(db_handler, id, password, gender == "male", major, grade == "undergraduate")
+    add_user(db_handler, id, name, password, gender == "male", major, \
+             grade == "undergraduate", number, email)
     print "current user table: "
     for row in db_handler.get_all_records(db_handler.user_tb):
         print row
@@ -219,6 +236,11 @@ def logout():
     return redirect(url_for('show_entries'))
 
 def calculateTimeLeft(e):
+    if e[5] == 'All day':
+        today_date = str(time.strftime("%Y-%m-%d"))
+        if today_date == str(e[4]):
+            return 0
+
     start_time = e[5].strip().split('-')[0]
     HH, MM = start_time.split(':')
     MM = MM[0:2]
@@ -239,7 +261,6 @@ def pushNotification(user, event, minutes):
     eventLoc = event[3]
     msg = "Hello from Pin@GT! The event %s you subscribe is upcoming! It will happen at %s in %s minutes." \
           % (eventName, eventLoc, minutes)
-    server.set_debuglevel(10)
     server.sendmail('PIN', [phoneNumber + '@tmomail.net'], msg)
     server.sendmail('PIN', [email], msg)
 

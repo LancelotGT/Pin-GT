@@ -16,9 +16,9 @@ def connect_db(db_file):
     return DBWrapper(db_file)
 
 # insert a new user
-def add_user(db, gtId, password, gender, major, grade):
+def add_user(db, gtId, name, password, gender, major, grade, number, email):
     iter_list = []
-    iter_list.append((gtId, password, gender, major, grade))
+    iter_list.append((gtId, password, gender, major, grade, name, email, number))
     db.insert_rows(db.user_tb, user_schema, iter_list)
 
 # insert a new event
@@ -115,16 +115,15 @@ def drop_all_tables(db):
 '''
 Private db stuff here
 '''
-
 user_schema = [
     ('gtId', 'INT NOT NULL'),
     ('password', 'VARCHAR(20) NOT NULL'),
-    ('name', 'VARCHAR(30) NOT NULL'),
     ('gender', 'TINYINT(1) NOT NULL'),
     ('major', 'VARCHAR(30) NOT NULL'),
     ('grade', 'TINYINT(1) NOT NULL'),
-    ('number', 'VARCHAR(20) NOT NULL'),
+    ('name', 'VARCHAR(30) NOT NULL'),
     ('email', 'VARCHAR(30) NOT NULL'),
+    ('number', 'VARCHAR(20) NOT NULL'),
     ('PRIMARY KEY', '(gtId)')        # PK
 ]
 

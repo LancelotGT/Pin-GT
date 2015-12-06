@@ -161,6 +161,7 @@ function postEvent(name, date, time, tags, location, latlon, description) {
 }
 
 function edit(i) {
+    console.log(events[i]);
     var event = events[i];
     $("#edit_name").val(event.Name);
     $("#edit_date").val(event.Date);
@@ -172,9 +173,9 @@ function edit(i) {
 }
 
 function subscribe(i) {
-    var actID = events[i].activityId;
+    var actID = events[i].ActivityId;
     var input = {
-        'activityID': activityId,
+        'activityID': actID,
     }
     $.ajax({
         url: '/notification',
