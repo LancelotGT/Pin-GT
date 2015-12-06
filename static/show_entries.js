@@ -75,7 +75,6 @@ function placeMarkerAndPanTo(latlng, map, name, time, date, loc, tags, descripti
         title: name,
         icon: iconBase + 'schools_maps.png'
     });
-
     contentString = '<div id="content">'+
     '<div id="siteNotice">'+
     '</div>'+
@@ -115,6 +114,7 @@ function placeMarkerAndPanTo(latlng, map, name, time, date, loc, tags, descripti
         }
     })(marker));
     map.panTo(latlng);
+    location.reload();
 }
 
 function getEvents(startDate, endDate, tag) {
@@ -169,6 +169,23 @@ function edit(i) {
     $("#edit_loc").val(event.Location);
     $("#edit_desc").html(event.Description);
     $('#editModal').modal('toggle');
+}
+
+function subscribe(i) {
+    var actID = events[i].activityId;
+    var input = {
+        'activityID': activityId,
+    }
+    $.ajax({
+        url: '/notification',
+        method: "POST",
+        contentType: 'application/json;charset=UTF-8',
+        data: JSON.stringify(input),
+        context: document.body,
+        success: function(data) {
+            console.log(data);
+        }
+    });
 }
 
 function editEvent(activityId, name, date, time, tags, location, description) {
@@ -263,6 +280,9 @@ function addEventInfo(data) {
                 '</p>' +
                 '</div>'+
                 '</div><hr>' +
+                '<button onclick="subscribe(' +
+                j +
+                ')">subscribe</button>' +
                 '<button onclick="edit(' +
                 j +
                 ')">Edit event</button>' +

@@ -109,6 +109,15 @@
         var description = $("#edit_desc").html();
         editEvent(activityId, name, date, time, tags, location, description);
     })
+
+    $.ajax({
+        url: '/notification',
+        method: "GET",
+        context: document.body,
+        success: function(data) {
+            console.log(data);
+        }
+    });
 </script>
 {% else %}
 <h2>Please log in to see on campus events.</h2>

@@ -85,6 +85,19 @@ def select_activity(db, start_date, end_date, tag):
             responses.append(d)
     return responses
 
+def add_notification(db, gtID, activityID):
+    l = []
+    l.append((activityID, gtID))
+    db.insert_rows(db.notification_tb, notification_schema, l)
+
+def get_notification(db, gtID):
+    record = db.get_notification_by_gtId(gtID)
+    response = []
+    for r in record:
+        act = db.get_record_by_activityId(r[0])
+        response.append(act)
+    return response
+
 def drop_all_tables(db):
     sql = "drop table " + db.notification_tb;
     db.exe(sql)
@@ -143,12 +156,10 @@ actTag_schema = [
 
 # suppose only send notification once (differenr from progr report)
 notification_schema = [
-    ('notificationId', 'INT NOT NULL AUTO_INCREMENT'),
-    ('locName', 'VARCHAR(50) NOT NULL'),
+    ('activityId', 'INT NOT NULL'),
     ('gtId', 'INT NOT NULL'),
-    ('time', 'DATETIME NOT NULL'),      # FORMAT: 2011-12-31 23:59:59
-    ('PRIMARY KEY', '(notificationId)'),
-    ('FOREIGN KEY', '(locName) REFERENCES location_tb (locName)'),
+    ('PRIMARY KEY', '(activityId, gtId)'),
+    ('FOREIGN KEY', '(activityId) REFERENCES activity_tb (activityId)'),
     ('FOREIGN KEY', '(gtId) REFERENCES user_tb (gtId)')
 ]
 
@@ -198,7 +209,7 @@ class DBWrapper(object):
             question_marks = ', '.join(['%s'] * (len(schema) - 1))
             return "INSERT IGNORE INTO {0} VALUES ({1})".format(tb_name, question_marks)
         # activity_tb, notification_schema
-        elif tb_name == 'activity_tb' or tb_name == 'notification_schema':
+        elif tb_name == 'activity_tb':
             question_marks = ', '.join(['%s'] * (len(schema) - 4))
             col_insert = []
             for i, col in enumerate(schema):
@@ -208,6 +219,15 @@ class DBWrapper(object):
             col_insert_str = '(' + col_insert_str + ')'
             return "INSERT IGNORE INTO {0} VALUES ({1})".format(tb_name + col_insert_str, question_marks)
         # actTag_schema
+        elif tb_name == 'notification_tb':
+            question_marks = ', '.join(['%s'] * (len(schema) - 3))
+            col_insert = []
+            for i, col in enumerate(schema):
+                if i in range(0, len(schema) - 3):
+                    col_insert.append(schema[i][0])
+            col_insert_str = ', '.join(col_insert)
+            col_insert_str = '(' + col_insert_str + ')'
+            return "INSERT IGNORE INTO {0} VALUES ({1})".format(tb_name + col_insert_str, question_marks)
         else:
             question_marks = ', '.join(['%s'] * (len(schema) - 2))
             col_insert = []
@@ -230,6 +250,7 @@ class DBWrapper(object):
 
     def insert_rows(self, tb_name, schema, iter_list):
         sql = self._build_insert_sql(tb_name, schema)
+        print sql
         for values in iter_list:
             self.c.execute(sql, tuple(values))
         self.commit()
@@ -268,6 +289,16 @@ class DBWrapper(object):
     def get_tag_by_activityId(self, activityId):
         sql = ("SELECT * FROM {0} WHERE " + str(actTag_schema[0][0]) + " = %s").format(self.actTag_tb)
         self.exe(sql, (activityId, ))
+        return self.c.fetchall()
+
+    def get_user_by_gtId(self, gtId):
+        sql = ("SELECT * FROM {0} WHERE " + str(user_schema[0][0]) + " = %s").format(self.user_tb)
+        self.exe(sql, (gtId, ))
+        return self.c.fetchone()
+
+    def get_notification_by_gtId(self, gtId):
+        sql = ("SELECT * FROM {0} WHERE " + str(notification_schema[1][0]) + " = %s").format(self.notification_tb)
+        self.exe(sql, (gtId, ))
         return self.c.fetchall()
 
     def delete_record_by_activityId(self, activityId):
