@@ -118,16 +118,21 @@
         editEvent(activityId, name, date, time, tags, location, description);
     })
 
-    $.ajax({
-        url: '/notification',
-        method: "GET",
-        context: document.body,
-        success: function(data) {
-            console.log(data);
-            if (data != "OK")
-                $("#notification").show();
-        }
-    });
+    function check_notification() {
+        $.ajax({
+            url: '/notification',
+            method: "GET",
+            context: document.body,
+            success: function(data) {
+                console.log(data);
+                if (data != "OK")
+                    $("#notification").show();
+            }
+        });
+    }
+    // constantly pull notification from server
+    var interval = setInterval(check_notification, 10000);
+
 </script>
 {% else %}
 <h2>Please log in to see on campus events.</h2>
