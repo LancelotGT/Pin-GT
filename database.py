@@ -98,6 +98,9 @@ def get_notification(db, gtID):
         response.append(act)
     return response
 
+def delete_notification(db, activityID, gtID):
+    db.delete_notification_by_key(activityID, gtID)
+
 def drop_all_tables(db):
     sql = "drop table " + db.notification_tb;
     db.exe(sql)
@@ -116,12 +119,13 @@ Private db stuff here
 user_schema = [
     ('gtId', 'INT NOT NULL'),
     ('password', 'VARCHAR(20) NOT NULL'),
-    #('name', 'VARCHAR(30) NOT NULL'),      # maybe add it later
+    ('name', 'VARCHAR(30) NOT NULL'),
     ('gender', 'TINYINT(1) NOT NULL'),
     ('major', 'VARCHAR(30) NOT NULL'),
     ('grade', 'TINYINT(1) NOT NULL'),
+    ('number', 'VARCHAR(20) NOT NULL'),
+    ('email', 'VARCHAR(30) NOT NULL'),
     ('PRIMARY KEY', '(gtId)')        # PK
-
 ]
 
 # tagId locationId
@@ -309,6 +313,12 @@ class DBWrapper(object):
     def delete_tag_by_activityId(self, activityId):
         sql = ("DELETE FROM {0} WHERE " + str(actTag_schema[0][0]) + " = %s").format(self.actTag_tb)
         self.exe(sql, (activityId, ))
+        self.commit()
+
+    def delete_notification_by_key(self, activityId, gtId):
+        sql = ("DELETE FROM {0} WHERE " + str(notification_schema[0][0]) + " = %s AND " + \
+               str(notification_schema[1][0]) + " = %s").format(self.notification_tb)
+        self.exe(sql, (activityId, gtId))
         self.commit()
 
     def update_activity_by_Id(self, activityId, name, date, time, description):

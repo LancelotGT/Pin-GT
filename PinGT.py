@@ -5,7 +5,7 @@ from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, flash, jsonify
 from database import init_db, add_user, add_activity, select_activity, \
     get_activity, update_activity, delete_activity, add_notification, \
-    get_notification
+    get_notification, delete_notification
 from crawler import *
 
 # create our little application :)
@@ -159,8 +159,10 @@ def notification():
         user = key_pairs[long(gtID)]
         for e in events:
             minutes = calculateTimeLeft(e)
-            if minutes < 600:
+            print minutes
+            if minutes < 2000:
                 pushNotification(user, e, minutes)
+                # delete_notification(db_handler, e[0], gtID)
         return "OK"
     elif request.method == "POST": # subscribe an event
         activityID = request.json['activityID']
@@ -231,16 +233,15 @@ def calculateTimeLeft(e):
     return minutes
 
 def pushNotification(user, event, minutes):
-    # TODO Replace this once user schema is changed
-    phoneNumber = '14049403672'
-    email = "glningwang@gmail.com"
-    eventName = "Video games"
-    eventLoc = "CRC"
+    email = user[5]
+    phoneNumber = user[6]
+    eventName = event[1]
+    eventLoc = event[3]
     msg = "Hello from Pin@GT! The event %s you subscribe is upcoming! It will happen at %s in %s minutes." \
           % (eventName, eventLoc, minutes)
     server.set_debuglevel(10)
-    server.sendmail('PIN@GT', [phoneNumber + '@tmomail.net'], msg)
-    server.sendmail('PIN@GT', [email], msg)
+    server.sendmail('PIN', [phoneNumber + '@tmomail.net'], msg)
+    server.sendmail('PIN', [email], msg)
 
 def populateData(start_date, end_date):
     events = crawler(start_date, end_date)
